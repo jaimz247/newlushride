@@ -1,0 +1,6 @@
+{
+  "name": "LushRide",
+  "description": "LushRide landing page - High-end digital presence for luxury mobility service in Lagos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
