@@ -1,0 +1,16 @@
+{
+  "name": "LushRide",
+  "short_name": "LushRide",
+  "description": "Premium chauffeur services, executive transfers, and luxury hourly car hire in Lagos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
