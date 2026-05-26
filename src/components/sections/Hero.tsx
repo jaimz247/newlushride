@@ -1,10 +1,149 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useI18n } from '../../lib/i18n';
 import FadeImage from '../ui/FadeImage';
-import { AlertTriangle, MapPin, CloudSun } from 'lucide-react';
+import { AlertTriangle, MapPin, CloudSun, Mic } from 'lucide-react';
+
+import { speechManager } from '../../lib/speech';
+
+const VoiceInput = ({ value, onChange, placeholder, label, required = true }: { value: string, onChange: (v: string) => void, placeholder: string, label: string, required?: boolean }) => {
+  const [isListening, setIsListening] = useState(false);
+  const [audioData, setAudioData] = useState<Uint8Array | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (isListening) {
+        speechManager.stop();
+      }
+    };
+  }, [isListening]);
+
+  const toggleListen = () => {
+    if (isListening) {
+      speechManager.stop();
+      setIsListening(false);
+      setAudioData(null);
+      return;
+    }
+
+    if (!speechManager.isSupported) {
+      toast.error("Enhanced voice input is not supported in your browser.");
+      return;
+    }
+
+    setIsListening(true);
+    setAudioData(null);
+    toast.success("Listening... Speak now", { 
+      duration: 2000, 
+      icon: <Mic className="text-lush-yellow animate-pulse" size={16} /> 
+    });
+
+    speechManager.start(
+      (transcript, isFinal) => {
+        onChange(transcript);
+        if (isFinal) {
+           toast.success("Location recognized & refined.");
+           setIsListening(false);
+        }
+      },
+      (errType) => {
+        setIsListening(false);
+        setAudioData(null);
+        if (errType === 'permission_denied') {
+          toast.error("Microphone access denied. Please check site permissions.");
+        } else if (errType === 'enhanced_voice_not_supported') {
+          toast.error("Enhanced voice input is not supported in your browser.");
+        } else if (errType !== 'start_error') {
+          toast.error("Could not quite catch that. Please try again.");
+        }
+      },
+      () => {
+        setIsListening(false);
+        setAudioData(null);
+      },
+      (data) => {
+        setAudioData(data);
+      }
+    );
+  };
+
+  return (
+    <div className="relative group">
+      <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">
+        {label}
+      </label>
+      <div className="relative flex items-center">
+        <input 
+          type="text" 
+          required={required}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={isListening ? "Listening..." : placeholder} 
+          className={`w-full bg-transparent border-b pb-3 pr-10 text-sm outline-none transition-all duration-300 placeholder:transition-opacity ${
+            isListening 
+              ? 'border-lush-yellow text-lush-yellow placeholder:text-lush-yellow/50 shadow-[0_1px_10px_rgba(249,211,0,0.05)] bg-lush-yellow/[0.03] pl-3 -ml-3 rounded-t' 
+              : 'border-white/20 text-white focus:border-lush-yellow placeholder:text-white/30'
+          }`}
+        />
+        {speechManager.isSupported && (
+          <button 
+            type="button"
+            onClick={toggleListen}
+            title={isListening ? "Stop listening" : "Use voice input"}
+            className={`absolute right-0 bottom-2.5 p-1.5 rounded-full transition-all duration-500 flex items-center justify-center
+              ${isListening 
+                ? 'bg-lush-yellow text-black shadow-[0_0_15px_rgba(249,211,0,0.6)] scale-110' 
+                : 'text-white/40 hover:text-white hover:bg-white/5'
+              }
+            `}
+          >
+            {isListening ? (
+              <motion.div
+                animate={{ scale: [1, 1.25, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              >
+                <Mic size={14} className="fill-black/30" />
+              </motion.div>
+            ) : (
+              <Mic size={15} />
+            )}
+          </button>
+        )}
+        
+        {/* Animated Sound Waves */}
+        <AnimatePresence>
+          {isListening && (
+             <motion.div 
+               initial={{ opacity: 0, width: 0 }}
+               animate={{ opacity: 1, width: 'auto' }}
+               exit={{ opacity: 0, width: 0 }}
+               className="absolute right-10 bottom-3 flex items-center gap-[2px] overflow-hidden h-4"
+             >
+               {Array.from({ length: 12 }).map((_, i) => {
+                 let h = 4;
+                 if (audioData) {
+                   const val = audioData[i * 2 + 10] || 0;
+                   h = 4 + (val / 255) * 12;
+                 }
+                 return (
+                   <motion.div
+                     key={i}
+                     style={{ height: `${h}px` }}
+                     className="w-[2px] bg-lush-yellow/60 rounded-full"
+                     animate={{ height: `${h}px` }}
+                     transition={{ duration: 0.1 }}
+                   />
+                 );
+               })}
+             </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState<'transfers' | 'hourly' | 'estimator'>('transfers');
@@ -13,6 +152,7 @@ export default function Hero() {
   const [trafficAlert, setTrafficAlert] = useState<{ status: string, area: string, level: 'low' | 'moderate' | 'high' } | null>(null);
   const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
   const [estimatorData, setEstimatorData] = useState({ origin: '', destination: '', vehicleClass: '' });
+  const [bookingData, setBookingData] = useState({ pickUp: '', dropOff: '' });
   const [estimate, setEstimate] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,7 +236,7 @@ export default function Hero() {
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col justify-center h-full">
         {/* Live Widgets Container */}
-        <div className="absolute top-0 right-6 lg:right-12 flex flex-col gap-3 items-end">
+        <div className="absolute top-4 md:top-0 right-6 lg:right-12 flex flex-col gap-3 items-end z-20">
           <AnimatePresence mode="wait">
             {trafficAlert && (
               <motion.div 
@@ -188,28 +328,18 @@ export default function Hero() {
           {activeTab === 'estimator' ? (
             <form onSubmit={handleEstimate} className="flex flex-col gap-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <div className="relative">
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Origin *</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={estimatorData.origin}
-                    onChange={(e) => setEstimatorData({ ...estimatorData, origin: e.target.value })}
-                    placeholder="e.g., Murtala Muhammed Airport" 
-                    className="w-full bg-transparent border-b border-white/20 text-white pb-3 text-sm focus:border-lush-yellow outline-none transition-all placeholder:text-white/30"
-                  />
-                </div>
-                <div className="relative">
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Destination *</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={estimatorData.destination}
-                    onChange={(e) => setEstimatorData({ ...estimatorData, destination: e.target.value })}
-                    placeholder="e.g., Eko Hotel, VI" 
-                    className="w-full bg-transparent border-b border-white/20 text-white pb-3 text-sm focus:border-lush-yellow outline-none transition-all placeholder:text-white/30"
-                  />
-                </div>
+                <VoiceInput 
+                  label="Origin *"
+                  placeholder="e.g., Murtala Muhammed Airport"
+                  value={estimatorData.origin}
+                  onChange={(v) => setEstimatorData({ ...estimatorData, origin: v })}
+                />
+                <VoiceInput 
+                  label="Destination *"
+                  placeholder="e.g., Eko Hotel, VI"
+                  value={estimatorData.destination}
+                  onChange={(v) => setEstimatorData({ ...estimatorData, destination: v })}
+                />
                 <div className="relative">
                   <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Vehicle Class *</label>
                   <select 
@@ -249,26 +379,20 @@ export default function Hero() {
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-4 items-end">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-                <div className="relative">
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Pick Up *</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Address, airport, hotel..." 
-                    className="w-full bg-transparent border-b border-white/20 text-white pb-3 text-sm focus:border-lush-yellow outline-none transition-all placeholder:text-white/30"
-                  />
-                </div>
+                <VoiceInput 
+                  label="Pick Up *"
+                  placeholder="Address, airport, hotel..."
+                  value={bookingData.pickUp}
+                  onChange={(v) => setBookingData({ ...bookingData, pickUp: v })}
+                />
                 
                 {activeTab === 'transfers' ? (
-                  <div className="relative">
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Drop Off *</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Address, airport, hotel..." 
-                      className="w-full bg-transparent border-b border-white/20 text-white pb-3 text-sm focus:border-lush-yellow outline-none transition-all placeholder:text-white/30"
-                    />
-                  </div>
+                  <VoiceInput 
+                    label="Drop Off *"
+                    placeholder="Address, airport, hotel..."
+                    value={bookingData.dropOff}
+                    onChange={(v) => setBookingData({ ...bookingData, dropOff: v })}
+                  />
                 ) : (
                   <div className="relative">
                     <label className="block text-[10px] uppercase tracking-widest text-muted-1 mb-2">Duration *</label>
@@ -286,6 +410,7 @@ export default function Hero() {
                   <input 
                     type="date" 
                     required
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full bg-transparent border-b border-white/20 text-white pb-3 text-sm focus:border-lush-yellow outline-none transition-all placeholder:text-white/30 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:invert"
                   />
                 </div>

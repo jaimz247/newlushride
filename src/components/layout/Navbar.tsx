@@ -212,7 +212,25 @@ export default function Navbar() {
                 </motion.a>
               </div>
 
-              <div className="mt-auto pt-16 grid grid-cols-2 gap-8 md:hidden">
+              <div className="mt-auto pt-16 grid grid-cols-2 gap-8 md:hidden border-t border-white/10">
+                 <div>
+                    <h4 className="text-[10px] font-display text-muted-1 uppercase tracking-widest mb-3">Settings</h4>
+                    <div className="flex flex-col gap-4">
+                      <button 
+                        onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
+                        className="text-white text-xs flex items-center gap-2 text-left"
+                      >
+                        {theme === 'midnight' ? <Moon size={14} className="text-lush-yellow" /> : <Circle size={14} className="text-lush-yellow fill-lush-yellow" />}
+                        {theme === 'midnight' ? 'Daylight Mode' : 'Midnight Mode'}
+                      </button>
+                      <button 
+                        onClick={() => { setDashboardOpen(true); setMobileMenuOpen(false); }}
+                        className="text-white text-xs flex items-center gap-2 text-left"
+                      >
+                        <History size={14} /> Trip History
+                      </button>
+                    </div>
+                 </div>
                  <div>
                     <h4 className="text-[10px] font-display text-muted-1 uppercase tracking-widest mb-3">Contact</h4>
                     <p className="text-xs text-white mb-1">Info@lushride.com</p>

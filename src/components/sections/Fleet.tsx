@@ -138,6 +138,7 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
 export default function Fleet() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [expandedVehicle, setExpandedVehicle] = useState<typeof fleet[0] | null>(null);
+  const [galleryVehicle, setGalleryVehicle] = useState<typeof fleet[0] | null>(null);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -230,18 +231,21 @@ export default function Fleet() {
                 variants={itemVariants}
                 className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 hover:border-lush-yellow/30 hover:-translate-y-2 hover:shadow-2xl hover:shadow-lush-yellow/10 transition-all duration-500"
               >
-                <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative cursor-pointer" onClick={() => setExpandedVehicle(tier)}>
+                <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative cursor-pointer group-hover:shadow-[0_0_20px_rgba(249,211,0,0.15)] transition-shadow" onClick={() => setGalleryVehicle(tier)}>
                    <VehicleCarousel images={tier.images} alt={tier.name} />
+                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                     <span className="bg-charcoal/80 backdrop-blur-md px-4 py-2 rounded-full text-white text-[10px] uppercase tracking-widest font-semibold border border-white/10">View Gallery</span>
+                   </div>
                 </div>
                 <div className="flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-display text-2xl text-white">{tier.name}</h3>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setExpandedVehicle(tier); }} 
-                      className="text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded"
+                      className="text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded bg-white/5 p-1.5 hover:bg-white/10"
                       aria-label={`View details for ${tier.name}`}
                     >
-                      <Info size={18} />
+                      <Info size={16} />
                     </button>
                   </div>
                   <p className="text-sm font-light text-lush-yellow mb-4 leading-relaxed">{tier.subtitle}</p>
@@ -275,7 +279,7 @@ export default function Fleet() {
       </div>
 
       <AnimatePresence>
-        {compareList.length > 0 && !isCompareModalOpen && !expandedVehicle && !selectedTier && (
+        {compareList.length > 0 && !isCompareModalOpen && !expandedVehicle && !selectedTier && !galleryVehicle && (
           <motion.div 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -297,6 +301,35 @@ export default function Fleet() {
               >
                 Compare Specs
               </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Gallery Modal */}
+      <AnimatePresence>
+        {galleryVehicle && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[130] flex items-center justify-center p-4 md:p-12 bg-black/95 backdrop-blur-3xl"
+            onClick={() => setGalleryVehicle(null)}
+          >
+            <button 
+              onClick={() => setGalleryVehicle(null)}
+              className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors z-40 bg-white/5 rounded-full p-3 hover:bg-white/10"
+              aria-label="Close gallery"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="w-full max-w-6xl aspect-[4/3] md:aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
+               <VehicleCarousel images={galleryVehicle.images} alt={`${galleryVehicle.name} HD Gallery`} />
+            </div>
+            
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-[10px] tracking-widest uppercase font-semibold">
+               {galleryVehicle.name} • {galleryVehicle.images.length} High-Definition Images
             </div>
           </motion.div>
         )}
@@ -509,7 +542,7 @@ export default function Fleet() {
                     <option value="Royal">Royal (Toyota Prado / Armored)</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-1.5">Your Name</label>
                     <input name="name" type="text" required className="w-full bg-[#111] border border-white/10 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-lush-yellow transition-colors" placeholder="John Doe" />
