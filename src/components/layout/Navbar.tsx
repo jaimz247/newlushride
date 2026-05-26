@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Logo } from "../ui/Logo";
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Moon, Circle } from 'lucide-react';
+import { Menu, X, Moon, Circle, History } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
+import TripHistory from '../ui/TripHistory';
 
 import { useI18n } from '../../lib/i18n';
 
@@ -10,7 +11,8 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { lang, setLang, t } = useI18n();
-  const [theme, setTheme] = useState<'midnight' | 'obsidian'>('midnight');
+  const [theme, setTheme] = useState<'midnight' | 'light'>('midnight');
+  const [dashboardOpen, setDashboardOpen] = useState(false);
 
   const [activeSection, setActiveSection] = useState<string>('');
 
@@ -44,15 +46,15 @@ export default function Navbar() {
 
   useEffect(() => {
     const doc = document.documentElement;
-    if (theme === 'obsidian') {
-      doc.setAttribute('data-theme', 'obsidian');
+    if (theme === 'light') {
+      doc.setAttribute('data-theme', 'light');
     } else {
       doc.removeAttribute('data-theme');
     }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'midnight' ? 'obsidian' : 'midnight');
+    setTheme(prev => prev === 'midnight' ? 'light' : 'midnight');
   };
 
   return (
@@ -98,12 +100,20 @@ export default function Navbar() {
             <button 
               onClick={toggleTheme}
               className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group hidden sm:flex"
-              aria-label={`Switch to ${theme === 'midnight' ? 'Obsidian' : 'Midnight'} mode`}
+              aria-label={`Switch to ${theme === 'midnight' ? 'Light' : 'Midnight'} mode`}
             >
               <span className="text-[10px] uppercase tracking-widest mr-1">
-                {theme === 'midnight' ? 'Midnight' : 'Obsidian'}
+                {theme === 'midnight' ? 'Midnight' : 'Daylight'}
               </span>
-              {theme === 'midnight' ? <Moon size={16} className="text-lush-yellow group-hover:scale-110 transition-transform" /> : <Circle fill="currentColor" size={14} className="group-hover:scale-110 transition-transform" />}
+              {theme === 'midnight' ? <Moon size={16} className="text-lush-yellow group-hover:scale-110 transition-transform" /> : <Circle fill="currentColor" size={14} className="group-hover:scale-110 transition-transform text-lush-yellow" />}
+            </button>
+
+            <button 
+              onClick={() => setDashboardOpen(true)}
+              className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group hidden sm:flex"
+            >
+              <History size={16} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] uppercase tracking-widest">History</span>
             </button>
 
             <a href="#book" className="hidden md:inline-flex px-6 py-3 bg-transparent border border-white/20 text-white text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-charcoal transition-all">
@@ -212,6 +222,10 @@ export default function Navbar() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {dashboardOpen && <TripHistory onClose={() => setDashboardOpen(false)} />}
       </AnimatePresence>
     </>
   );

@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { useI18n } from '../../lib/i18n';
 import FadeImage from '../ui/FadeImage';
-import { AlertTriangle, MapPin } from 'lucide-react';
+import { AlertTriangle, MapPin, CloudSun } from 'lucide-react';
 
 export default function Hero() {
   const [activeTab, setActiveTab] = useState<'transfers' | 'hourly' | 'estimator'>('transfers');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useI18n();
   const [trafficAlert, setTrafficAlert] = useState<{ status: string, area: string, level: 'low' | 'moderate' | 'high' } | null>(null);
+  const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
   const [estimatorData, setEstimatorData] = useState({ origin: '', destination: '', vehicleClass: '' });
   const [estimate, setEstimate] = useState<string | null>(null);
 
@@ -28,6 +29,14 @@ export default function Hero() {
     fetchTraffic();
     const interval = setInterval(fetchTraffic, 15000); // Simulate live updates
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Mock weather service for Lagos
+    setWeather({
+      temp: 29,
+      condition: 'Partly Cloudy',
+    });
   }, []);
 
   const handleEstimate = (e: React.FormEvent) => {
@@ -86,31 +95,53 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col justify-center h-full">
-        {/* Live Traffic Widget */}
-        <AnimatePresence mode="wait">
-          {trafficAlert && (
-            <motion.div 
-              key={trafficAlert.status}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute top-0 right-6 lg:right-12 bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-4 shadow-xl flex items-center gap-3 w-fit"
-            >
-              <div className="relative flex h-2.5 w-2.5">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${trafficAlert.level === 'high' ? 'bg-red-500' : trafficAlert.level === 'moderate' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${trafficAlert.level === 'high' ? 'bg-red-500' : trafficAlert.level === 'moderate' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase tracking-wider text-white/50 font-semibold flex items-center gap-1">
-                  <MapPin size={9} /> {trafficAlert.area}
-                </span>
-                <span className="text-white text-xs font-medium">
-                  {trafficAlert.status}
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Live Widgets Container */}
+        <div className="absolute top-0 right-6 lg:right-12 flex flex-col gap-3 items-end">
+          <AnimatePresence mode="wait">
+            {trafficAlert && (
+              <motion.div 
+                key={trafficAlert.status}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-4 shadow-xl flex items-center gap-3 w-fit"
+              >
+                <div className="relative flex h-2.5 w-2.5">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${trafficAlert.level === 'high' ? 'bg-red-500' : trafficAlert.level === 'moderate' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${trafficAlert.level === 'high' ? 'bg-red-500' : trafficAlert.level === 'moderate' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] uppercase tracking-wider text-white/50 font-semibold flex items-center gap-1">
+                    <MapPin size={9} /> {trafficAlert.area}
+                  </span>
+                  <span className="text-white text-xs font-medium">
+                    {trafficAlert.status}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence mode="wait">
+            {weather && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-4 shadow-xl flex items-center gap-3 w-fit"
+              >
+                <CloudSun size={16} className="text-lush-yellow" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] uppercase tracking-wider text-white/50 font-semibold">
+                    Lagos, NG
+                  </span>
+                  <span className="text-white text-xs font-medium">
+                    {weather.temp}°C • {weather.condition}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <motion.div 
           initial={{ opacity: 0, y: 30 }}

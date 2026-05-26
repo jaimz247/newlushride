@@ -11,6 +11,17 @@
   }
 }
 
+:root[data-theme="light"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+:root[data-theme="light"] img,
+:root[data-theme="light"] video,
+:root[data-theme="light"] .no-invert,
+:root[data-theme="light"] .bg-white\/5 {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 .bg-theme {
   background-color: var(--bg-theme);
 }

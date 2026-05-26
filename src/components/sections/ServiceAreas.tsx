@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin } from 'lucide-react';
+import { MapPin, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
 
 const locations = [
@@ -59,6 +59,20 @@ const locations = [
 export default function ServiceAreas() {
   const [activePin, setActivePin] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<typeof locations[0] | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.5, 3));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.5, 1));
+
+  // Determine roughly from city center (assume x: 50, y: 50)
+  const calculateDistance = (loc: typeof locations[0]) => {
+    const dist = Math.sqrt(Math.pow(loc.x - 50, 2) + Math.pow(loc.y - 50, 2));
+    const km = Math.max(1.5, (dist / 100) * 45).toFixed(1);
+    const mins = Math.round(Number(km) * 2.5 + 15);
+    return { km, mins };
+  };
 
   return (
     <section className="py-32 bg-theme transition-colors duration-500 overflow-hidden relative">
@@ -82,70 +96,101 @@ export default function ServiceAreas() {
           </p>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="relative w-full aspect-[4/3] md:aspect-[21/9] bg-[#0A0A0A] rounded-xl overflow-hidden border border-white/5 shadow-2xl"
-        >
-          <div className="absolute inset-0">
-            <FadeImage 
-              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=2000&q=60&fm=webp" 
-              alt="Lagos Map View" 
-              wrapperClassName="absolute inset-0"
-              className="w-full h-full object-cover opacity-20 mix-blend-luminosity grayscale"
-            />
-            <div className="absolute inset-0 flex flex-col pointer-events-none z-20">
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-80" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-80" />
-            </div>
-          </div>
-
-          {/* Map Grid overlay */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50 mix-blend-overlay" />
-
-          {/* Interactive Pins */}
-          {locations.map((loc) => (
-            <div 
-              key={loc.id} 
-              className="absolute z-20 group"
-              style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: 'translate(-50%, -100%)' }}
-              onMouseEnter={() => setActivePin(loc.id)}
-              onMouseLeave={() => setActivePin(null)}
-              onClick={() => setSelectedLocation(loc)}
+        <div className="relative">
+          <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+            <button 
+              onClick={handleZoomIn}
+              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors"
+              aria-label="Zoom In"
             >
-              <div className="relative">
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.2 }}
-                  className="w-10 h-10 flex items-center justify-center cursor-pointer relative"
-                >
-                  <MapPin className={`w-8 h-8 transition-colors duration-300 relative z-10 ${activePin === loc.id ? 'text-lush-yellow drop-shadow-[0_0_8px_rgba(249,211,0,0.8)]' : 'text-white/60 group-hover:text-white'}`} fill="currentColor" />
-                  
-                  {/* Subtle pulsing background ring, larger when active */}
-                  <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lush-yellow/20 mix-blend-screen transition-all duration-500 ease-in-out ${activePin === loc.id ? 'w-16 h-16 animate-ping' : 'w-8 h-8 opacity-0'}`} />
-                </motion.div>
-                
-                <AnimatePresence>
-                  {activePin === loc.id && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#111]/95 backdrop-blur-md border border-white/10 rounded-lg p-4 shadow-2xl pointer-events-none z-30"
-                    >
-                      <h4 className="text-white font-display text-sm mb-1">{loc.name}</h4>
-                      <p className="text-muted-1 text-[10px] lowercase opacity-80 leading-snug">{loc.desc}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <ZoomIn size={20} />
+            </button>
+            <button 
+              onClick={handleZoomOut}
+              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors"
+              aria-label="Zoom Out"
+            >
+              <ZoomOut size={20} />
+            </button>
+          </div>
+          
+          <motion.div 
+            ref={mapContainerRef}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="relative w-full aspect-[4/3] md:aspect-[21/9] bg-[#0A0A0A] rounded-xl overflow-hidden border border-white/5 shadow-2xl cursor-grab active:cursor-grabbing"
+          >
+            <motion.div 
+              ref={mapRef}
+              drag
+              dragConstraints={mapContainerRef}
+              dragElastic={0.2}
+              className="absolute inset-0 w-full h-full transform-gpu origin-center"
+              animate={{ scale: zoomScale }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <FadeImage 
+                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=2000&q=60&fm=webp" 
+                alt="Lagos Map View" 
+                wrapperClassName="absolute inset-0 w-full h-full"
+                className="w-full h-full object-cover opacity-20 mix-blend-luminosity grayscale"
+              />
+              <div className="absolute inset-0 flex flex-col pointer-events-none z-20">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-80" />
               </div>
-            </div>
-          ))}
-        </motion.div>
+
+              {/* Map Grid overlay */}
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50 mix-blend-overlay" />
+
+              {/* Interactive Pins */}
+              {locations.map((loc) => (
+                <button
+                  key={loc.id} 
+                  className="absolute z-20 group focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded-full"
+                  style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: `translate(-50%, -100%) scale(${1/zoomScale})` }}
+                  onMouseEnter={() => setActivePin(loc.id)}
+                  onMouseLeave={() => setActivePin(null)}
+                  onClick={() => setSelectedLocation(loc)}
+                  aria-label={`View details for ${loc.name} service area`}
+                  aria-expanded={selectedLocation?.id === loc.id}
+                >
+                  <div className="relative pointer-events-none">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={selectedLocation?.id === loc.id ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                      transition={selectedLocation?.id === loc.id ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+                      whileHover={{ scale: 1.2 }}
+                      className="w-10 h-10 flex items-center justify-center cursor-pointer relative"
+                    >
+                      <MapPin className={`w-8 h-8 transition-colors duration-300 relative z-10 ${selectedLocation?.id === loc.id || activePin === loc.id ? 'text-lush-yellow drop-shadow-[0_0_8px_rgba(249,211,0,0.8)]' : 'text-white/60 group-hover:text-white'}`} fill="currentColor" />
+                      
+                      {/* Subtle pulsing background ring, larger when active */}
+                      <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lush-yellow/20 mix-blend-screen transition-all duration-500 ease-in-out ${selectedLocation?.id === loc.id || activePin === loc.id ? 'w-16 h-16 animate-ping' : 'w-8 h-8 opacity-0'}`} />
+                    </motion.div>
+                    
+                    <AnimatePresence>
+                      {activePin === loc.id && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#111]/95 backdrop-blur-md border border-white/10 rounded-lg p-4 shadow-2xl z-30 pointer-events-auto"
+                        >
+                          <h4 className="text-white font-display text-sm mb-1">{loc.name}</h4>
+                          <p className="text-muted-1 text-[10px] lowercase opacity-80 leading-snug">{loc.desc}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </button>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
 
         {/* Detailed Information Drawer */}
         <AnimatePresence>
@@ -157,17 +202,28 @@ export default function ServiceAreas() {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="absolute top-0 right-0 h-full w-full sm:w-80 bg-[#111]/95 backdrop-blur-xl border-l border-white/10 z-40 p-8 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
-              <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+              <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                 <h3 className="text-xl font-display text-white">{selectedLocation.name}</h3>
                 <button 
                   onClick={() => setSelectedLocation(null)}
                   className="text-white/50 hover:text-white transition-colors"
+                  aria-label="Close details"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
               
               <div className="flex-1 overflow-y-auto">
+                <div className="mb-6 flex gap-4 bg-white/5 border border-white/10 rounded-md p-4 items-center">
+                  <Navigation className="text-lush-yellow shrink-0" size={24} />
+                  <div>
+                    <p className="text-xs text-white/50 uppercase tracking-widest mb-1">From City Center</p>
+                    <p className="text-sm font-semibold text-white">
+                      ~{calculateDistance(selectedLocation).mins} mins <span className="text-white/40 font-normal">({calculateDistance(selectedLocation).km} km)</span>
+                    </p>
+                  </div>
+                </div>
+
                 <p className="text-sm text-muted-1 font-light leading-relaxed mb-6">
                   {selectedLocation.desc}
                 </p>
