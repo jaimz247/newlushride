@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -26,6 +27,10 @@ export default function Partner() {
 
   return (
     <section id="partner" className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>Partner | LushRide</title>
+        <meta name="description" content="Explore the Partner section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

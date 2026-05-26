@@ -1,8 +1,13 @@
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
 
 export default function Accolades() {
   return (
     <section className="bg-theme transition-colors duration-500 py-24">
+      <Helmet>
+        <title>Accolades | LushRide</title>
+        <meta name="description" content="Explore the Accolades section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
            <motion.div 

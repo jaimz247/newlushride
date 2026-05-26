@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
@@ -24,8 +25,26 @@ const faqs = [
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <section className="py-32 bg-theme transition-colors duration-500">
+      <Helmet>
+        <title>FAQ | LushRide</title>
+        <meta name="description" content="Explore the FAQ section of LushRide's premium chauffeur services." />
+        <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+      </Helmet>
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-16">
           <span className="text-lush-yellow uppercase tracking-widest text-xs font-semibold mb-4 block">Information</span>

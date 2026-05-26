@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, X, Info, ChevronLeft, ChevronRight, MessageCircle, Shield, History, Star } from 'lucide-react';
+import { ArrowRight, X, Info, ChevronLeft, ChevronRight, MessageCircle, Shield, History, Star, ArrowLeftRight } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
 import { toast } from 'sonner';
 
@@ -56,7 +57,7 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
@@ -78,7 +79,15 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
   };
 
   return (
-    <div className="relative w-full h-full group overflow-hidden bg-[#111]">
+    <div 
+      className="relative w-full h-full group overflow-hidden bg-[#111]"
+      role="region"
+      aria-label={`${alt} Image Carousel`}
+    >
+      <Helmet>
+        <title>Fleet | LushRide</title>
+        <meta name="description" content="Explore the Fleet section of LushRide's premium chauffeur services." />
+      </Helmet>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={currentIndex}
@@ -88,21 +97,36 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
           transition={{ duration: 0.3 }}
           className="w-full h-full relative"
         >
-          <FadeImage src={images[currentIndex]} alt={`${alt} - ${currentIndex + 1}`} className="w-full h-full object-cover animate-kenburns" />
+          <FadeImage src={images[currentIndex]} alt={`${alt} - View ${currentIndex + 1} of ${images.length}`} className="w-full h-full object-cover animate-kenburns" />
         </motion.div>
       </AnimatePresence>
       
       {images.length > 1 && (
         <>
-          <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 z-20">
+          <button 
+            onClick={prev} 
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 z-20 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-lush-yellow"
+            aria-label="Previous image"
+          >
             <ChevronLeft size={16} />
           </button>
-          <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 z-20">
+          <button 
+            onClick={next} 
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 z-20 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-lush-yellow"
+            aria-label="Next image"
+          >
             <ChevronRight size={16} />
           </button>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20" role="tablist">
             {images.map((_, idx) => (
-              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentIndex ? 'bg-lush-yellow' : 'bg-white/40'}`} />
+              <button 
+                key={idx}
+                role="tab"
+                aria-selected={idx === currentIndex}
+                aria-label={`Go to image ${idx + 1}`}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-lush-yellow ${idx === currentIndex ? 'bg-lush-yellow w-3' : 'bg-white/40 hover:bg-white/60'}`} 
+              />
             ))}
           </div>
         </>
@@ -114,9 +138,47 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
 export default function Fleet() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [expandedVehicle, setExpandedVehicle] = useState<typeof fleet[0] | null>(null);
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const toggleCompare = (tierName: string) => {
+    if (compareList.includes(tierName)) {
+      setCompareList(prev => prev.filter(t => t !== tierName));
+    } else {
+      if (compareList.length >= 3) {
+        toast('Compare limit reached', { description: 'You can only compare up to 3 vehicles.' });
+        return;
+      }
+      setCompareList(prev => [...prev, tierName]);
+    }
+  };
+
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": fleet.map((tier, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Product",
+        "name": `LushRide ${tier.name} Class - ${tier.subtitle}`,
+        "description": tier.overview,
+        "image": tier.images[0]
+      }
+    }))
+  };
 
   return (
     <section id="fleet" className="bg-theme transition-colors duration-500 py-32 relative">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -148,43 +210,173 @@ export default function Fleet() {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {fleet.map((tier) => (
-            <motion.div 
-              key={tier.name}
-              variants={itemVariants}
-              className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 hover:border-lush-yellow/30 hover:-translate-y-2 hover:shadow-2xl hover:shadow-lush-yellow/10 transition-all duration-500"
-            >
-              <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative cursor-pointer" onClick={() => setExpandedVehicle(tier)}>
-                 <VehicleCarousel images={tier.images} alt={tier.name} />
-              </div>
-              <div className="flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-display text-2xl text-white">{tier.name}</h3>
-                  <button onClick={() => setExpandedVehicle(tier)} className="text-white/60 hover:text-white transition-colors">
-                    <Info size={18} />
-                  </button>
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 animate-pulse">
+                <div className="aspect-[16/10] w-full bg-white/5 rounded-lg mb-6" />
+                <div className="w-1/2 h-8 bg-white/5 mb-4 rounded" />
+                <div className="w-3/4 h-4 bg-white/5 mb-8 rounded" />
+                <div className="mt-auto grid grid-cols-2 gap-2 mb-2">
+                  <div className="h-9 bg-white/5 rounded-md" />
+                  <div className="h-9 bg-white/5 rounded-md" />
                 </div>
-                <p className="text-sm font-light text-lush-yellow mb-4 leading-relaxed">{tier.subtitle}</p>
-                <div className="mt-auto grid grid-cols-2 gap-2">
+                <div className="h-9 w-full bg-white/5 rounded-md mt-2" />
+              </div>
+            ))
+          ) : (
+            fleet.map((tier) => (
+              <motion.div 
+                key={tier.name}
+                variants={itemVariants}
+                className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 hover:border-lush-yellow/30 hover:-translate-y-2 hover:shadow-2xl hover:shadow-lush-yellow/10 transition-all duration-500"
+              >
+                <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative cursor-pointer" onClick={() => setExpandedVehicle(tier)}>
+                   <VehicleCarousel images={tier.images} alt={tier.name} />
+                </div>
+                <div className="flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-display text-2xl text-white">{tier.name}</h3>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setExpandedVehicle(tier); }} 
+                      className="text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded"
+                      aria-label={`View details for ${tier.name}`}
+                    >
+                      <Info size={18} />
+                    </button>
+                  </div>
+                  <p className="text-sm font-light text-lush-yellow mb-4 leading-relaxed">{tier.subtitle}</p>
+                  <div className="mt-auto grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => setSelectedTier(tier.name)}
+                      className="inline-flex items-center justify-center py-2.5 bg-white text-black text-[10px] tracking-widest uppercase font-semibold rounded-md hover:bg-lush-yellow transition-colors w-full"
+                    >
+                      Book Now
+                    </button>
+                    <a 
+                      href={`https://wa.me/2347037404784?text=${encodeURIComponent(`Hello, I'd like to ask a question regarding the ${tier.name} tier (${tier.subtitle}).`)}`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center justify-center py-2.5 bg-[#111] border border-white/10 text-white text-[10px] tracking-widest uppercase font-semibold rounded-md hover:border-white/30 transition-colors w-full"
+                    >
+                      <MessageCircle size={14} className="mr-1.5" /> Concierge
+                    </a>
+                  </div>
                   <button 
-                    onClick={() => setSelectedTier(tier.name)}
-                    className="inline-flex items-center justify-center py-2.5 bg-white text-black text-[10px] tracking-widest uppercase font-semibold rounded-md hover:bg-lush-yellow transition-colors w-full"
+                    onClick={() => toggleCompare(tier.name)}
+                    className={`mt-2 flex items-center justify-center py-2.5 w-full border border-white/10 text-[10px] tracking-widest uppercase font-semibold rounded-md transition-colors ${compareList.includes(tier.name) ? 'bg-lush-yellow text-black border-lush-yellow' : 'bg-transparent text-white/70 hover:border-white/30 hover:text-white'}`}
                   >
-                    Book Now
+                    <ArrowLeftRight size={14} className="mr-1.5" /> 
+                    {compareList.includes(tier.name) ? 'Selected for Compare' : 'Compare'}
                   </button>
-                  <a 
-                    href={`https://wa.me/2347037404784?text=${encodeURIComponent(`Hello, I'd like to ask a question regarding the ${tier.name} tier (${tier.subtitle}).`)}`}
-                    target="_blank" rel="noreferrer"
-                    className="inline-flex items-center justify-center py-2.5 bg-[#111] border border-white/10 text-white text-[10px] tracking-widest uppercase font-semibold rounded-md hover:border-white/30 transition-colors w-full"
-                  >
-                    <MessageCircle size={14} className="mr-1.5" /> Concierge
-                  </a>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {compareList.length > 0 && !isCompareModalOpen && !expandedVehicle && !selectedTier && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-[#111]/90 backdrop-blur-md border border-white/10 px-6 py-4 rounded-full shadow-2xl flex items-center gap-6"
+          >
+            <span className="text-sm text-white"><span className="font-semibold text-lush-yellow">{compareList.length}</span> vehicle(s) selected</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setCompareList([])}
+                className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors px-3 py-2"
+              >
+                Clear
+              </button>
+              <button 
+                onClick={() => setIsCompareModalOpen(true)}
+                disabled={compareList.length < 2}
+                className="text-[10px] uppercase tracking-widest bg-white text-black font-semibold rounded-full px-5 py-2 hover:bg-lush-yellow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Compare Specs
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Compare Modal */}
+      <AnimatePresence>
+        {isCompareModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+            onClick={() => setIsCompareModalOpen(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative shadow-3xl flex flex-col p-8 md:p-12 mb-auto mt-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setIsCompareModalOpen(false)}
+                className="absolute top-4 right-4 bg-black/50 w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors z-30"
+              >
+                <X size={18} />
+              </button>
+
+              <h2 className="text-3xl font-display text-white mb-8 border-b border-white/10 pb-4">Vehicle Comparison</h2>
+              
+              <div className="grid gap-6 overflow-x-auto pb-4" style={{ gridTemplateColumns: `repeat(${compareList.length}, minmax(280px, 1fr))` }}>
+                {compareList.map(tierName => {
+                  const vehicle = fleet.find(f => f.name === tierName);
+                  if (!vehicle) return null;
+                  return (
+                    <div key={tierName} className="flex flex-col gap-6">
+                      <div className="aspect-[16/10] bg-[#111] rounded-lg overflow-hidden relative">
+                        <FadeImage src={vehicle.images[0]} alt={vehicle.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <span className="text-lush-yellow text-xs tracking-widest uppercase font-semibold">{vehicle.name} Class</span>
+                        <h4 className="text-xl font-display text-white mt-1">{vehicle.subtitle}</h4>
+                      </div>
+                      
+                      <div className="space-y-4 text-sm">
+                        <div className="border-t border-white/5 pt-4">
+                          <span className="text-white/40 block text-xs uppercase tracking-widest mb-1">Engine</span>
+                          <span className="text-white">{vehicle.specs.engine}</span>
+                        </div>
+                        <div className="border-t border-white/5 pt-4">
+                          <span className="text-white/40 block text-xs uppercase tracking-widest mb-1">Efficiency</span>
+                          <span className="text-white">{vehicle.specs.efficiency}</span>
+                        </div>
+                        <div className="border-t border-white/5 pt-4">
+                          <span className="text-white/40 block text-xs uppercase tracking-widest mb-1">Capacity</span>
+                          <span className="text-white">{vehicle.specs.capacity}</span>
+                        </div>
+                        <div className="border-t border-white/5 pt-4">
+                          <span className="text-white/40 block text-xs uppercase tracking-widest mb-1">Safety</span>
+                          <span className="text-white/80 line-clamp-3">{vehicle.safety}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setIsCompareModalOpen(false);
+                          setSelectedTier(vehicle.name);
+                        }}
+                        className="mt-auto inline-flex items-center justify-center py-3 bg-white text-black text-[10px] tracking-widest uppercase font-semibold rounded-md hover:bg-lush-yellow transition-colors w-full"
+                      >
+                        Book {vehicle.name}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Expanded Vehicle Details Modal */}
       <AnimatePresence>
@@ -202,10 +394,14 @@ export default function Fleet() {
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-3xl flex flex-col md:flex-row"
               onClick={e => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
             >
               <button 
                 onClick={() => setExpandedVehicle(null)}
-                className="absolute top-4 right-4 bg-black/50 w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors z-30"
+                className="absolute top-4 right-4 bg-black/50 w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors z-30 focus:outline-none focus:ring-2 focus:ring-lush-yellow"
+                aria-label="Close vehicle details"
               >
                 <X size={18} />
               </button>
@@ -218,7 +414,7 @@ export default function Fleet() {
               {/* Right Side: Details */}
               <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col">
                 <span className="text-lush-yellow text-xs tracking-widest uppercase font-semibold mb-2">{expandedVehicle.name} Class</span>
-                <h3 className="text-3xl font-display text-white mb-6">{expandedVehicle.subtitle}</h3>
+                <h3 id="modal-title" className="text-3xl font-display text-white mb-6">{expandedVehicle.subtitle}</h3>
                 
                 <p className="text-muted-1 font-light leading-relaxed mb-8">{expandedVehicle.overview}</p>
 

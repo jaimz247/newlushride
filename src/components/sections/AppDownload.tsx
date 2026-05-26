@@ -1,13 +1,30 @@
-import { motion } from 'motion/react';
-import { Apple, Play } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Apple, Play, Car } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
 
 export default function AppDownload() {
+  const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section className="relative py-24 lg:py-32 overflow-hidden bg-theme transition-colors duration-500">
+      <Helmet>
+        <title>AppDownload | LushRide</title>
+        <meta name="description" content="Explore the AppDownload section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="absolute inset-0 z-0">
          <FadeImage 
-            src="https://images.unsplash.com/photo-1512404098908-1cc67c7e5a62?auto=format&fit=crop&w=1920&q=80" 
+            src="https://images.unsplash.com/photo-1512404098908-1cc67c7e5a62?auto=format&fit=crop&w=1920&q=60&fm=webp" 
             alt="Mobile App" 
             wrapperClassName="absolute inset-0"
             className="w-full h-full object-cover opacity-20 mix-blend-luminosity"
@@ -62,7 +79,7 @@ export default function AppDownload() {
                <div className="absolute inset-0 bg-[#050505] flex flex-col font-sans">
                  {/* Map Background Simulation */}
                  <div className="absolute inset-0 opacity-40">
-                   <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=400&q=80" alt="Map Route" className="w-full h-1/2 object-cover" />
+                   <FadeImage src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=400&q=60&fm=webp" alt="Map Route" className="w-full h-1/2 object-cover" />
                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505] h-1/2" />
                  </div>
 
@@ -79,14 +96,33 @@ export default function AppDownload() {
                      </div>
                    </div>
                    
+                   <AnimatePresence>
+                     {showToast && (
+                       <motion.div
+                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                         className="absolute top-24 left-4 right-4 bg-[#111]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50 flex items-center gap-3"
+                       >
+                         <div className="w-10 h-10 rounded-full bg-lush-yellow/20 flex items-center justify-center text-lush-yellow flex-shrink-0">
+                           <Car size={18} />
+                         </div>
+                         <div>
+                           <p className="text-white text-xs font-semibold mb-0.5">Chauffeur Approaching</p>
+                           <p className="text-white/60 text-[10px]">Your Lexus RX 350 is 2 minutes away.</p>
+                         </div>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+
                    {/* Bottom Sheet */}
                    <div className="bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-3xl p-5 mt-auto shadow-2xl">
                      <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-5" />
                      
                      {/* Car Preview */}
                      <div className="w-full aspect-[16/9] bg-black rounded-2xl mb-5 flex overflow-hidden border border-white/5 relative">
-                        <img src="/lexus1.jpg" alt="App car preview" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-2 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10">
+                        <FadeImage src="/lexus1.jpg" alt="App car preview" className="w-full h-full object-cover" wrapperClassName="w-full h-full" />
+                        <div className="absolute bottom-2 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10 z-20">
                           <span className="text-white font-medium text-xs">Lexus RX</span>
                         </div>
                      </div>

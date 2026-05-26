@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Phone, MessageSquare } from 'lucide-react';
@@ -52,6 +53,10 @@ export default function Contact() {
 
   return (
     <section id="contact" className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>Contact | LushRide</title>
+        <meta name="description" content="Explore the Contact section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           
@@ -109,9 +114,14 @@ export default function Contact() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+            {isSubmitting && (
+              <div className="absolute inset-0 z-50 bg-charcoal/80 backdrop-blur-sm flex items-center justify-center rounded-sm">
+                <div className="w-8 h-8 border-2 border-lush-yellow/30 border-t-lush-yellow rounded-full animate-spin" />
+              </div>
+            )}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             
-            <h3 className="text-2xl font-display text-white mb-8">Send a Message</h3>
+            <h3 className="text-2xl font-display text-white mb-8 relative z-10">Send a Message</h3>
             
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

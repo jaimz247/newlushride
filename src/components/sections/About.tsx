@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
 import FadeImage from '../ui/FadeImage';
 
 export default function About() {
   return (
     <section id="about" className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>About | LushRide</title>
+        <meta name="description" content="Explore the About section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           
@@ -33,7 +38,7 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <FadeImage 
-               src="https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80" 
+               src="https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=60&fm=webp" 
                alt="Executive Class"
                wrapperClassName="absolute inset-0 z-0"
                className="w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity duration-700 ease-in-out mix-blend-luminosity"

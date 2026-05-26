@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { motion, useInView } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 
@@ -32,6 +33,10 @@ function Counter({ end, label, suffix = '' }: { end: number, label: string, suff
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="flex flex-col items-center justify-center p-8 border border-white/5 bg-[#0A0A0A] shadow-xl rounded-xl cursor-default"
     >
+      <Helmet>
+        <title>OurImpact | LushRide</title>
+        <meta name="description" content="Explore the OurImpact section of LushRide's premium chauffeur services." />
+      </Helmet>
       <h4 className="text-4xl md:text-5xl font-display text-lush-yellow mb-2 font-light">
         {count}{suffix}
       </h4>

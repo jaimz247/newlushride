@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Shield, EyeOff, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -22,6 +23,10 @@ const TRUST_FEATURES = [
 export default function Trust() {
   return (
     <section className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>Trust | LushRide</title>
+        <meta name="description" content="Explore the Trust section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-24">
           <h2 className="text-4xl md:text-5xl font-display mb-6 text-white">Trust &amp; Discretion.</h2>

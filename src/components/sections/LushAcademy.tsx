@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
 import FadeImage from '../ui/FadeImage';
 
 export default function LushAcademy() {
   return (
     <section id="academy" className="bg-theme transition-colors duration-500 py-12 md:py-24">
+      <Helmet>
+        <title>LushAcademy | LushRide</title>
+        <meta name="description" content="Explore the LushAcademy section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="grid grid-cols-1 lg:grid-cols-2">
         
         {/* Visual Side */}
@@ -15,7 +20,7 @@ export default function LushAcademy() {
           transition={{ duration: 1 }}
         >
           <FadeImage 
-            src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=80" 
+            src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=60&fm=webp" 
             alt="Lush Academy Training" 
             wrapperClassName="absolute inset-0 z-0"
             className="w-full h-full object-cover object-center opacity-60 mix-blend-luminosity"

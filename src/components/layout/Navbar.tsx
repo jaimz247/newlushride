@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Logo } from "../ui/Logo";
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Moon, Circle } from 'lucide-react';
+import FadeImage from '../ui/FadeImage';
+
+import { useI18n } from '../../lib/i18n';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [lang, setLang] = useState('EN');
+  const { lang, setLang, t } = useI18n();
+  const [theme, setTheme] = useState<'midnight' | 'obsidian'>('midnight');
+
+  const [activeSection, setActiveSection] = useState<string>('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +22,38 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const sections = ['about', 'services', 'fleet', 'hubs', 'partner'];
+    const sectionElements = sections.map(id => document.getElementById(id));
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, { rootMargin: '-20% 0px -80% 0px' });
+
+    sectionElements.forEach(el => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const doc = document.documentElement;
+    if (theme === 'obsidian') {
+      doc.setAttribute('data-theme', 'obsidian');
+    } else {
+      doc.removeAttribute('data-theme');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'midnight' ? 'obsidian' : 'midnight');
+  };
 
   return (
     <>
@@ -29,6 +67,26 @@ export default function Navbar() {
             <Logo className="w-20 md:w-28 object-contain" />
           </div>
 
+          {/* Center Links (Desktop) */}
+          <div className="hidden lg:flex items-center gap-8">
+            {[
+              { id: 'about', label: t('nav.about') },
+              { id: 'services', label: t('nav.services') },
+              { id: 'fleet', label: t('nav.fleet') },
+              { id: 'hubs', label: t('nav.hubs') },
+              { id: 'partner', label: t('nav.partner') },
+            ].map(link => (
+              <a 
+                key={link.id} 
+                href={`#${link.id}`} 
+                className={`text-[10px] uppercase tracking-widest font-medium transition-colors ${activeSection === link.id ? 'text-lush-yellow' : 'text-white/60 hover:text-white'}`}
+                aria-current={activeSection === link.id ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
           {/* Right Action & Menu Toggle */}
           <div className="flex items-center gap-6 md:gap-10">
             <div className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-widest font-medium">
@@ -36,21 +94,20 @@ export default function Navbar() {
               <span className="text-white/20">/</span>
               <button onClick={() => setLang('FR')} className={`${lang === 'FR' ? 'text-white' : 'text-white/40 hover:text-white/80'} transition-colors`}>FR</button>
             </div>
+            
             <button 
-              onClick={() => {
-                const doc = document.documentElement;
-                if (doc.getAttribute('data-theme') === 'obsidian') {
-                  doc.removeAttribute('data-theme');
-                } else {
-                  doc.setAttribute('data-theme', 'obsidian');
-                }
-              }}
-              className="text-white/60 hover:text-white transition-colors text-[10px] uppercase tracking-widest hidden sm:block"
+              onClick={toggleTheme}
+              className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group hidden sm:flex"
+              aria-label={`Switch to ${theme === 'midnight' ? 'Obsidian' : 'Midnight'} mode`}
             >
-              Toggle Theme
+              <span className="text-[10px] uppercase tracking-widest mr-1">
+                {theme === 'midnight' ? 'Midnight' : 'Obsidian'}
+              </span>
+              {theme === 'midnight' ? <Moon size={16} className="text-lush-yellow group-hover:scale-110 transition-transform" /> : <Circle fill="currentColor" size={14} className="group-hover:scale-110 transition-transform" />}
             </button>
+
             <a href="#book" className="hidden md:inline-flex px-6 py-3 bg-transparent border border-white/20 text-white text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-charcoal transition-all">
-              Request a Quote
+              {t('nav.quote')}
             </a>
             <button 
               className="text-white p-2 hover:text-lush-yellow transition-colors flex items-center gap-3 group"
@@ -73,9 +130,10 @@ export default function Navbar() {
             transition={{ type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.8}
+            dragElastic={0.9}
+            style={{ touchAction: 'none' }}
             onDragEnd={(e, { offset, velocity }) => {
-              if (offset.x > 100 || velocity.x > 500) {
+              if (offset.x > window.innerWidth / 3 || velocity.x > 300) {
                 setMobileMenuOpen(false);
               }
             }}
@@ -83,13 +141,14 @@ export default function Navbar() {
           >
             {/* Left Decorative Side (Hidden on mobile) */}
             <div className="hidden md:flex flex-1 relative bg-black border-r border-white/5">
-              <img 
-                src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=80" 
+              <FadeImage 
+                src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=60&fm=webp" 
                 alt="Menu Decor" 
-                className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity"
+                wrapperClassName="absolute inset-0"
+                className="w-full h-full object-cover opacity-30 mix-blend-luminosity"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent" />
-              <div className="relative z-10 p-12 mt-auto">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent z-20 pointer-events-none" />
+              <div className="relative z-30 p-12 mt-auto">
                 <Logo className="w-24 md:w-36 object-contain mb-6" />
                 <p className="text-muted-1 font-light max-w-sm text-sm">
                   Lagos' finest premium chauffeur service. Absolute comfort, uncompromising privacy, and precision scheduling for the elite.
@@ -112,22 +171,22 @@ export default function Navbar() {
              
               <div className="flex flex-col gap-6 md:gap-8 mt-auto md:mt-24">
                 {[
-                  { num: '01', title: 'WHO WE ARE', href: '#about' },
-                  { num: '02', title: 'SERVICES', href: '#services' },
-                  { num: '03', title: 'TIERS', href: '#fleet' },
-                  { num: '04', title: 'HUBS', href: '#hubs' },
-                  { num: '05', title: 'PARTNERS', href: '#partner' },
+                  { num: '01', title: t('nav.about'), id: 'about' },
+                  { num: '02', title: t('nav.services'), id: 'services' },
+                  { num: '03', title: t('nav.fleet'), id: 'fleet' },
+                  { num: '04', title: t('nav.hubs'), id: 'hubs' },
+                  { num: '05', title: t('nav.partner'), id: 'partner' },
                 ].map((item, index) => (
                   <motion.a 
-                    key={item.href}
-                    href={item.href} 
+                    key={item.id}
+                    href={`#${item.id}`} 
                     onClick={() => setMobileMenuOpen(false)} 
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-4xl md:text-6xl font-display text-white hover:text-lush-yellow transition-colors tracking-tight flex items-center group"
+                    className={`text-4xl md:text-6xl font-display transition-colors tracking-tight flex items-center group ${activeSection === item.id ? 'text-lush-yellow' : 'text-white hover:text-lush-yellow'}`}
                   >
-                    <span className="text-sm font-light text-muted-1 mr-6 w-8 hidden md:block">{item.num}</span> {item.title}
+                    <span className={`text-sm font-light mr-6 w-8 hidden md:block ${activeSection === item.id ? 'text-lush-yellow/50' : 'text-muted-1'}`}>{item.num}</span> {item.title}
                   </motion.a>
                 ))}
                 

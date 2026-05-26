@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import FadeImage from '../ui/FadeImage';
@@ -51,6 +52,10 @@ export default function Corporate() {
 
   return (
     <section id="corporate" className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>Corporate | LushRide</title>
+        <meta name="description" content="Explore the Corporate section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           
@@ -94,13 +99,20 @@ export default function Corporate() {
 
           {/* Corporate Inquiry Form */}
           <motion.div 
-            className="bg-charcoal border border-white/10 p-8 md:p-12"
+            className="bg-charcoal border border-white/10 p-8 md:p-12 relative"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
           >
+            {isSubmitting && (
+              <div className="absolute inset-0 z-50 bg-charcoal/80 backdrop-blur-sm flex items-center justify-center rounded-sm">
+                <div className="w-8 h-8 border-2 border-lush-yellow/30 border-t-lush-yellow rounded-full animate-spin" />
+              </div>
+            )}
+            
             <h3 className="text-2xl font-display text-white mb-2">Corporate Inquiry</h3>
+
             <p className="text-sm text-muted-1 mb-8 font-light">Our dedicated team will respond within 24 hours.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>

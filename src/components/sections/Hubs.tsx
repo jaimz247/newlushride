@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
@@ -6,23 +7,27 @@ const hubs = [
   {
     name: 'Ikoyi',
     desc: 'The center of corporate elegance & luxury living.',
-    image: 'https://images.unsplash.com/photo-1506501139174-099022df5260?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1506501139174-099022df5260?auto=format&fit=crop&w=800&q=60&fm=webp',
   },
   {
     name: 'Victoria Island',
     desc: 'The vibrant heart of commerce & fine dining.',
-    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=60&fm=webp',
   },
   {
     name: 'Lekki',
     desc: 'The dynamic pulse of lifestyle & contemporary culture.',
-    image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=800&q=60&fm=webp',
   }
 ];
 
 export default function Hubs() {
   return (
     <section id="hubs" className="bg-theme transition-colors duration-500 py-32">
+      <Helmet>
+        <title>Hubs | LushRide</title>
+        <meta name="description" content="Explore the Hubs section of LushRide's premium chauffeur services." />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

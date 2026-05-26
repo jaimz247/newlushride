@@ -49,11 +49,35 @@ h1, h2, h3, h4, h5, h6 {
   scrollbar-width: none;
 }
 
+@media print {
+  nav, footer, .modal, [role="dialog"], button, .no-print, #desktop-cursor, #scroll-progress, #quick-enquiry, #whatsapp-button, form {
+    display: none !important;
+  }
+  body, main, section {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  * {
+    color: black !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-color: #ddd !important;
+  }
+  img, video, canvas {
+    filter: grayscale(100%) contrast(150%) brightness(110%) !important;
+  }
+}
+
 @keyframes kenburns {
   0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.08) translate(-1%, -1%); }
+  25% { transform: scale(1.02) translate(0.5%, 0.5%); }
+  50% { transform: scale(1.04) translate(-0.5%, 0.5%); }
+  75% { transform: scale(1.06) translate(-0.5%, -0.5%); }
+  100% { transform: scale(1.08) translate(0.5%, -0.5%); }
 }
 
 .animate-kenburns {
-  animation: kenburns 20s ease-in-out infinite alternate;
+  animation: kenburns 30s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
