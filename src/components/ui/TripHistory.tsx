@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { X, Calendar, MapPin, Search, RefreshCw, Car, Printer } from 'lucide-react';
+import { X, Calendar, MapPin, Search, RefreshCw, Car, Printer, Clock, Route } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TripHistoryProps {
@@ -15,6 +15,8 @@ const mockHistory = [
     origin: 'Murtala Muhammed Airport',
     destination: 'Eko Hotel & Suites, Victoria Island',
     vehicle: 'Lexus RX 350',
+    distance: '32 km',
+    time: '45 mins',
     amount: '₦85,000',
     status: 'Completed',
   },
@@ -25,6 +27,8 @@ const mockHistory = [
     origin: 'Lekki Phase 1',
     destination: 'Multiple Stops (Lagos Mainland)',
     vehicle: 'Mercedes-Benz G-Wagon',
+    distance: 'N/A',
+    time: '8 Hours',
     amount: '₦350,000',
     status: 'Completed',
   },
@@ -35,6 +39,8 @@ const mockHistory = [
     origin: 'Banana Island',
     destination: 'Murtala Muhammed Airport',
     vehicle: 'Range Rover Sentinel',
+    distance: '38 km',
+    time: '55 mins',
     amount: '₦120,000',
     status: 'Completed',
   }
@@ -107,10 +113,25 @@ export default function TripHistory({ onClose }: TripHistoryProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-light text-muted-1">
+                    <div className="flex items-center gap-4 text-xs font-light text-muted-1 mb-4">
                       <span className="flex items-center gap-1.5"><Car size={14} /> {trip.vehicle}</span>
                       <span className="w-1 h-1 rounded-full bg-white/20" />
-                      <span className="text-white/80">{trip.amount}</span>
+                      <span className="text-white/80 font-medium">{trip.amount}</span>
+                    </div>
+
+                    <div className="bg-[#111] rounded-md p-3 border border-white/5 flex gap-4 md:gap-6 justify-between items-center text-xs text-white/60">
+                      <div className="flex items-center gap-2">
+                         <Route size={14} className="text-lush-yellow/80" />
+                         <span><span className="hidden md:inline uppercase text-[9px] tracking-widest text-white/40 mr-1">Est. Distance:</span>{trip.distance}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <Clock size={14} className="text-lush-yellow/80" />
+                         <span><span className="hidden md:inline uppercase text-[9px] tracking-widest text-white/40 mr-1">Est. Time:</span>{trip.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <Car size={14} className="text-lush-yellow/80" />
+                         <span className="line-clamp-1"><span className="hidden lg:inline uppercase text-[9px] tracking-widest text-white/40 mr-1">Class:</span>{trip.vehicle.split(' ')[0]}</span>
+                      </div>
                     </div>
                   </div>
 

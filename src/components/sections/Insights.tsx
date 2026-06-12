@@ -6,6 +6,7 @@ import { ArrowRight, BookOpen, X } from 'lucide-react';
 
 
 const articles = [
+
   {
     id: 1,
     title: 'Navigating Victoria Island: A Guide to the Finest Dining',
@@ -62,6 +63,83 @@ const articles = [
   }
 ];
 
+const ArticleModal = ({ selectedArticle, onClose }: { selectedArticle: typeof articles[0], onClose: () => void }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ container: scrollRef });
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+      onClick={onClose}
+    >
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#050505] border border-white/10 rounded-2xl w-full max-w-4xl h-[90vh] relative shadow-2xl flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="article-title"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 z-50 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 transition-all focus:outline-none focus:ring-2 focus:ring-lush-yellow"
+          aria-label="Close article"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Progress Bar Container */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-40">
+          <motion.div 
+            className="h-full bg-lush-yellow origin-left"
+            style={{ scaleX }}
+          />
+        </div>
+
+        {/* Scrollable Content */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+          <div className="relative h-64 md:h-96 w-full">
+            <FadeImage 
+              src={selectedArticle.image} 
+              alt={selectedArticle.title}
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent" />
+          </div>
+          
+          <div className="max-w-2xl mx-auto px-6 py-12 -mt-24 relative z-10">
+            <div className="flex items-center gap-4 text-xs text-lush-yellow mb-6 font-mono tracking-widest uppercase">
+              <span>{selectedArticle.category}</span>
+              <span className="w-1 h-1 rounded-full bg-lush-yellow/50" />
+              <span>{selectedArticle.date}</span>
+              <span className="w-1 h-1 rounded-full bg-lush-yellow/50" />
+              <span>{selectedArticle.readTime}</span>
+            </div>
+            
+            <h2 id="article-title" className="text-3xl md:text-5xl font-display text-white mb-10 leading-tight">
+              {selectedArticle.title}
+            </h2>
+            
+            <div className="prose prose-invert prose-lg prose-p:text-muted-2 prose-p:font-light prose-p:leading-relaxed space-y-8">
+              {selectedArticle.content}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export default function Insights() {
   const [selectedArticle, setSelectedArticle] = useState<typeof articles[0] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,14 +150,6 @@ export default function Insights() {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
-  
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: scrollRef });
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
 
   return (
     <>
@@ -171,70 +241,10 @@ export default function Insights() {
 
       <AnimatePresence>
         {selectedArticle && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
-            onClick={() => setSelectedArticle(null)}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-[#050505] border border-white/10 rounded-2xl w-full max-w-4xl h-[90vh] relative shadow-2xl flex flex-col overflow-hidden"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="article-title"
-            >
-              <button 
-                onClick={() => setSelectedArticle(null)}
-                className="absolute top-6 right-6 z-50 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 transition-all focus:outline-none focus:ring-2 focus:ring-lush-yellow"
-                aria-label="Close article"
-              >
-                <X size={20} />
-              </button>
-
-              {/* Progress Bar Container */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-40">
-                <motion.div 
-                  className="h-full bg-lush-yellow origin-left"
-                  style={{ scaleX }}
-                />
-              </div>
-
-              {/* Scrollable Content */}
-              <div ref={scrollRef} className="flex-1 overflow-y-auto">
-                <div className="relative h-64 md:h-96 w-full">
-                  <FadeImage 
-                    src={selectedArticle.image} 
-                    alt={selectedArticle.title}
-                    className="w-full h-full object-cover" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent" />
-                </div>
-                
-                <div className="max-w-2xl mx-auto px-6 py-12 -mt-24 relative z-10">
-                  <div className="flex items-center gap-4 text-xs text-lush-yellow mb-6 font-mono tracking-widest uppercase">
-                    <span>{selectedArticle.category}</span>
-                    <span className="w-1 h-1 rounded-full bg-lush-yellow/50" />
-                    <span>{selectedArticle.date}</span>
-                    <span className="w-1 h-1 rounded-full bg-lush-yellow/50" />
-                    <span>{selectedArticle.readTime}</span>
-                  </div>
-                  
-                  <h2 id="article-title" className="text-3xl md:text-5xl font-display text-white mb-10 leading-tight">
-                    {selectedArticle.title}
-                  </h2>
-                  
-                  <div className="prose prose-invert prose-lg prose-p:text-muted-2 prose-p:font-light prose-p:leading-relaxed space-y-8">
-                    {selectedArticle.content}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+          <ArticleModal 
+            selectedArticle={selectedArticle} 
+            onClose={() => setSelectedArticle(null)} 
+          />
         )}
       </AnimatePresence>
     </>

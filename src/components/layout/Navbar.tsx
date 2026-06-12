@@ -11,10 +11,39 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { lang, setLang, t } = useI18n();
-  const [theme, setTheme] = useState<'midnight' | 'light'>('midnight');
   const [dashboardOpen, setDashboardOpen] = useState(false);
-
   const [activeSection, setActiveSection] = useState<string>('');
+  
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncQueueCount, setSyncQueueCount] = useState(0);
+
+  useEffect(() => {
+    const checkQueue = () => {
+      const queue = JSON.parse(localStorage.getItem('offlineBookingQueue') || '[]');
+      setSyncQueueCount(queue.length);
+    };
+    checkQueue();
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      checkQueue();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      checkQueue();
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    const interval = setInterval(checkQueue, 2000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,7 +51,30 @@ export default function Navbar() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Smooth scrolling for anchor links
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Find the closest anchor tag
+      const anchor = target.closest('a');
+      
+      if (anchor && anchor.hash && anchor.hash.startsWith('#') && anchor.origin === window.location.origin) {
+        e.preventDefault();
+        const element = document.querySelector(anchor.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Update URL without jumping
+          window.history.pushState(null, '', anchor.hash);
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleAnchorClick);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('click', handleAnchorClick);
+    };
   }, []);
 
   useEffect(() => {
@@ -43,19 +95,6 @@ export default function Navbar() {
 
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    const doc = document.documentElement;
-    if (theme === 'light') {
-      doc.setAttribute('data-theme', 'light');
-    } else {
-      doc.removeAttribute('data-theme');
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'midnight' ? 'light' : 'midnight');
-  };
 
   return (
     <>
@@ -92,28 +131,31 @@ export default function Navbar() {
           {/* Right Action & Menu Toggle */}
           <div className="flex items-center gap-6 md:gap-10">
             <div className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-widest font-medium">
-              <button onClick={() => setLang('EN')} className={`${lang === 'EN' ? 'text-white' : 'text-white/40 hover:text-white/80'} transition-colors`}>EN</button>
-              <span className="text-white/20">/</span>
-              <button onClick={() => setLang('FR')} className={`${lang === 'FR' ? 'text-white' : 'text-white/40 hover:text-white/80'} transition-colors`}>FR</button>
+              {!isOnline ? (
+                <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded" role="status" aria-label={`Offline status${syncQueueCount > 0 ? `, ${syncQueueCount} pending` : ''}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" aria-hidden="true" />
+                  <span className="text-[10px] uppercase tracking-widest font-semibold">
+                    Offline {syncQueueCount > 0 && `(${syncQueueCount} Pending)`}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded" role="status" aria-label="Online status">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                  <span className="text-[10px] uppercase tracking-widest font-semibold">Online</span>
+                </div>
+              )}
+              
+              <button onClick={() => setLang('EN')} aria-label="Switch to English" className={`${lang === 'EN' ? 'text-white' : 'text-white/40 hover:text-white/80'} transition-colors ml-2`}>EN</button>
+              <span className="text-white/20" aria-hidden="true">/</span>
+              <button onClick={() => setLang('FR')} aria-label="Switch to French" className={`${lang === 'FR' ? 'text-white' : 'text-white/40 hover:text-white/80'} transition-colors`}>FR</button>
             </div>
             
             <button 
-              onClick={toggleTheme}
-              className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group hidden sm:flex"
-              aria-label={`Switch to ${theme === 'midnight' ? 'Light' : 'Midnight'} mode`}
-            >
-              <span className="text-[10px] uppercase tracking-widest mr-1">
-                {theme === 'midnight' ? 'Midnight' : 'Daylight'}
-              </span>
-              {theme === 'midnight' ? <Moon size={16} className="text-lush-yellow group-hover:scale-110 transition-transform" /> : <Circle fill="currentColor" size={14} className="group-hover:scale-110 transition-transform text-lush-yellow" />}
-            </button>
-
-            <button 
               onClick={() => setDashboardOpen(true)}
               className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group hidden sm:flex"
+              aria-label="Open recent bookings dashboard"
             >
-              <History size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] uppercase tracking-widest">History</span>
+              <History size={16} className="group-hover:scale-110 transition-transform" aria-hidden="true" />
             </button>
 
             <a href="#book" className="hidden md:inline-flex px-6 py-3 bg-transparent border border-white/20 text-white text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-charcoal transition-all">
@@ -122,9 +164,11 @@ export default function Navbar() {
             <button 
               className="text-white p-2 hover:text-lush-yellow transition-colors flex items-center gap-3 group"
               onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open global menu"
+              aria-expanded={mobileMenuOpen}
             >
               <span className="hidden md:block text-[11px] font-medium tracking-[0.2em] uppercase">Menu</span>
-              <Menu size={24} className="group-hover:scale-110 transition-transform" />
+              <Menu size={24} className="group-hover:scale-110 transition-transform" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -216,13 +260,6 @@ export default function Navbar() {
                  <div>
                     <h4 className="text-[10px] font-display text-muted-1 uppercase tracking-widest mb-3">Settings</h4>
                     <div className="flex flex-col gap-4">
-                      <button 
-                        onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
-                        className="text-white text-xs flex items-center gap-2 text-left"
-                      >
-                        {theme === 'midnight' ? <Moon size={14} className="text-lush-yellow" /> : <Circle size={14} className="text-lush-yellow fill-lush-yellow" />}
-                        {theme === 'midnight' ? 'Daylight Mode' : 'Midnight Mode'}
-                      </button>
                       <button 
                         onClick={() => { setDashboardOpen(true); setMobileMenuOpen(false); }}
                         className="text-white text-xs flex items-center gap-2 text-left"

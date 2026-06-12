@@ -1,9 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import CustomCursor from './components/ui/CustomCursor';
 import ScrollProgress from './components/ui/ScrollProgress';
-import QuickEnquiryButton from './components/ui/QuickEnquiryButton';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import { Toaster } from 'sonner';
 import { Helmet } from 'react-helmet-async';
@@ -23,6 +22,8 @@ const ServiceAreas = lazy(() => import('./components/sections/ServiceAreas'));
 const AppDownload = lazy(() => import('./components/sections/AppDownload'));
 const FAQ = lazy(() => import('./components/sections/FAQ'));
 const Insights = lazy(() => import('./components/sections/Insights'));
+const Waitlist = lazy(() => import('./components/sections/Waitlist'));
+const AdminDashboard = lazy(() => import('./components/sections/AdminDashboard'));
 
 function Divider() {
   return <div className="w-full h-px bg-white/10" />;
@@ -85,6 +86,37 @@ const InsightsSkeleton = () => (
 );
 
 export default function App() {
+  const [isAdminView, setIsAdminView] = useState(false);
+
+  useEffect(() => {
+    const checkPath = () => {
+      setIsAdminView(window.location.pathname === '/admin');
+    };
+    checkPath();
+    window.addEventListener('popstate', checkPath);
+    return () => window.removeEventListener('popstate', checkPath);
+  }, []);
+
+  const navigateToHome = () => {
+    window.history.pushState({}, '', '/');
+    setIsAdminView(false);
+  };
+
+  if (isAdminView) {
+    return (
+      <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto">
+        <Toaster position="bottom-center" />
+        <Suspense fallback={
+          <div className="h-screen flex flex-col items-center justify-center bg-[#050505]">
+            <div className="w-8 h-8 border-2 border-lush-yellow border-t-transparent animate-spin rounded-full mb-4"></div>
+            <p className="text-xs uppercase tracking-widest text-white/40">Loading Command Console...</p>
+          </div>
+        }>
+          <AdminDashboard onClose={navigateToHome} />
+        </Suspense>
+      </div>
+    );
+  }
   return (
     <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto md:cursor-none transition-colors duration-500">
       <Helmet>
@@ -94,7 +126,6 @@ export default function App() {
       </Helmet>
       <ScrollProgress />
       <CustomCursor />
-      <QuickEnquiryButton />
       <Toaster position="bottom-center" />
       <Navbar />
       <WhatsAppButton />
@@ -135,6 +166,8 @@ export default function App() {
           <Partner />
           <Divider />
           <FAQ />
+          <Divider />
+          <Waitlist />
           <Divider />
           <Contact />
         </Suspense>

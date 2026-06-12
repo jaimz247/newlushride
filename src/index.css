@@ -92,3 +92,9 @@ h1, h2, h3, h4, h5, h6 {
 .animate-kenburns {
   animation: kenburns 30s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

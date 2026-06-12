@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 
 export default function Partner() {
-  const [activeTab, setActiveTab] = useState<'vehicle'|'pilot'>('vehicle');
+  const [activeTab, setActiveTab] = useState<'vehicle'|'chauffeur'>('vehicle');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -41,7 +41,7 @@ export default function Partner() {
         >
           <h2 className="text-4xl font-display mb-6 text-white">Join the Standard.</h2>
           <p className="text-lg text-muted-2 font-light max-w-xl mx-auto">
-            We are actively expanding our fleet and our roster of elite pilots. Partner with LushRide for premium tier earnings and an exclusive clientele.
+            We are actively expanding our fleet and our roster of elite chauffeurs. Partner with LushRide for premium tier earnings and an exclusive clientele.
           </p>
         </motion.div>
 
@@ -60,10 +60,10 @@ export default function Partner() {
               Vehicle Owners
             </button>
             <button 
-              onClick={() => setActiveTab('pilot')}
-              className={`flex-1 py-4 text-sm tracking-widest uppercase transition-colors ${activeTab === 'pilot' ? 'text-white border-b-2 border-lush-yellow bg-[#0A0A0A]' : 'text-muted-1 hover:text-white'}`}
+              onClick={() => setActiveTab('chauffeur')}
+              className={`flex-1 py-4 text-sm tracking-widest uppercase transition-colors ${activeTab === 'chauffeur' ? 'text-white border-b-2 border-lush-yellow bg-[#0A0A0A]' : 'text-muted-1 hover:text-white'}`}
             >
-              Prospective Pilots
+              Prospective Chauffeurs
             </button>
           </div>
 
@@ -107,9 +107,9 @@ export default function Partner() {
                  </motion.div>
                )}
 
-               {activeTab === 'pilot' && (
+               {activeTab === 'chauffeur' && (
                  <motion.div
-                   key="pilot"
+                   key="chauffeur"
                    initial={{ opacity: 0, y: 10 }}
                    animate={{ opacity: 1, y: 0 }}
                    exit={{ opacity: 0, y: -10 }}

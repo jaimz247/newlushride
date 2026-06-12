@@ -6,13 +6,15 @@
     <title>LushRide - Luxury in Motion</title>
     <meta name="description" content="Experience Lagos with LushRide. Premium chauffeur services, executive transfers, and luxury hourly car hire." />
     <meta name="theme-color" content="#050505" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
     <!-- Open Graph / Social -->
     <meta property="og:title" content="LushRide - Luxury in Motion" />
     <meta property="og:description" content="Premium chauffeur services, executive transfers, and luxury hourly car hire in Lagos." />
     <meta property="og:image" content="/lexus1.jpg" />
+    <link rel="preload" as="image" href="https://upload.wikimedia.org/wikipedia/commons/1/17/2022_Land_Rover_Range_Rover_SE_P440e_AWD_Automatic_3.0_Front.jpg" />
     <!-- Additional Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -21,6 +23,17 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('SW registered: ', registration);
+          }).catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 

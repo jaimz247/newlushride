@@ -134,7 +134,7 @@ export default function Footer() {
             © {new Date().getFullYear()} LushRide Worldwide. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-white/50">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors" aria-label="Instagram">
+            <a href="https://www.instagram.com/lushrideng/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors" aria-label="Instagram">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
             </a>
             <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors" aria-label="X (Twitter)">
@@ -148,6 +148,7 @@ export default function Footer() {
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Terms</a>
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Legal Notice</a>
+            <a href="/admin" className="text-xs font-light text-muted-1 hover:text-lush-yellow transition-colors font-medium">Staff Login</a>
           </div>
         </div>
 

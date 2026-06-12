@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
@@ -39,20 +39,6 @@ const locations = [
     x: 40,
     y: 35,
     desc: 'The bustling ecosystem of tech and innovation.',
-  },
-  {
-    id: 'festac',
-    name: 'Festac',
-    x: 10,
-    y: 45,
-    desc: 'Historic mainland enclave of commerce and residence.',
-  },
-  {
-    id: 'epe',
-    name: 'Epe',
-    x: 90,
-    y: 80,
-    desc: 'A growing resort destination and quiet retreat.',
   }
 ];
 
@@ -60,11 +46,28 @@ export default function ServiceAreas() {
   const [activePin, setActivePin] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<typeof locations[0] | null>(null);
   const [zoomScale, setZoomScale] = useState(1);
+  const [interactionOrigin, setInteractionOrigin] = useState({ x: 50, y: 50 });
   const mapRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.5, 3));
   const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.5, 1));
+
+  const handlePinFocus = (loc: typeof locations[0]) => {
+    setActivePin(loc.id);
+    if (zoomScale === 1) {
+      setInteractionOrigin({ x: loc.x, y: loc.y });
+    }
+  };
+
+  const handlePinSelect = (loc: typeof locations[0]) => {
+    setSelectedLocation(loc);
+    // When selecting, slightly zoom in to focus context
+    if (zoomScale < 1.5) {
+      setInteractionOrigin({ x: loc.x, y: loc.y });
+      setZoomScale(1.5);
+    }
+  };
 
   // Determine roughly from city center (assume x: 50, y: 50)
   const calculateDistance = (loc: typeof locations[0]) => {
@@ -100,15 +103,15 @@ export default function ServiceAreas() {
           <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
             <button 
               onClick={handleZoomIn}
-              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors"
-              aria-label="Zoom In"
+              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors focus:ring-2 focus:ring-lush-yellow outline-none"
+              aria-label="Zoom In map"
             >
               <ZoomIn size={20} />
             </button>
             <button 
               onClick={handleZoomOut}
-              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors"
-              aria-label="Zoom Out"
+              className="p-2 bg-black/60 backdrop-blur-md border border-white/10 rounded text-white hover:bg-white/10 transition-colors focus:ring-2 focus:ring-lush-yellow outline-none"
+              aria-label="Zoom Out map"
             >
               <ZoomOut size={20} />
             </button>
@@ -120,22 +123,27 @@ export default function ServiceAreas() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            className="relative w-full aspect-[4/3] md:aspect-[21/9] bg-[#0A0A0A] rounded-xl overflow-hidden border border-white/5 shadow-2xl cursor-grab active:cursor-grabbing"
+            className="relative w-full aspect-[3/4] sm:aspect-[4/3] md:aspect-[21/9] bg-[#0A0A0A] rounded-xl overflow-hidden border border-white/5 shadow-2xl cursor-grab active:cursor-grabbing"
+            role="region"
+            aria-label="Interactive map of service areas"
           >
             <motion.div 
               ref={mapRef}
               drag
               dragConstraints={mapContainerRef}
               dragElastic={0.2}
-              className="absolute inset-0 w-full h-full transform-gpu origin-center"
-              animate={{ scale: zoomScale }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute inset-0 w-full h-full transform-gpu"
+              animate={{ 
+                scale: zoomScale, 
+                transformOrigin: `${interactionOrigin.x}% ${interactionOrigin.y}%` 
+              }}
+              transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1.2 }}
             >
               <FadeImage 
                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=2000&q=60&fm=webp" 
                 alt="Lagos Map View" 
                 wrapperClassName="absolute inset-0 w-full h-full"
-                className="w-full h-full object-cover opacity-20 mix-blend-luminosity grayscale"
+                className="w-full h-full object-cover opacity-20 mix-blend-luminosity grayscale pointer-events-none"
               />
               <div className="absolute inset-0 flex flex-col pointer-events-none z-20">
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-80" />
@@ -143,21 +151,29 @@ export default function ServiceAreas() {
               </div>
 
               {/* Map Grid overlay */}
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50 mix-blend-overlay" />
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50 mix-blend-overlay pointer-events-none" />
 
               {/* Interactive Pins */}
               {locations.map((loc) => (
                 <button
                   key={loc.id} 
-                  className="absolute z-20 group focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded-full"
+                  className="absolute z-20 group focus:outline-none rounded-full"
                   style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: `translate(-50%, -100%) scale(${1/zoomScale})` }}
-                  onMouseEnter={() => setActivePin(loc.id)}
+                  onMouseEnter={() => handlePinFocus(loc)}
                   onMouseLeave={() => setActivePin(null)}
-                  onClick={() => setSelectedLocation(loc)}
-                  aria-label={`View details for ${loc.name} service area`}
+                  onClick={() => handlePinSelect(loc)}
+                  onFocus={() => handlePinFocus(loc)}
+                  onBlur={() => setActivePin(null)}
+                  aria-label={`Select ${loc.name} service area`}
                   aria-expanded={selectedLocation?.id === loc.id}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handlePinSelect(loc);
+                    }
+                  }}
                 >
-                  <div className="relative pointer-events-none">
+                  <div className="relative pointer-events-none flex items-center justify-center">
                     <motion.div 
                       initial={{ scale: 0 }}
                       animate={selectedLocation?.id === loc.id ? { scale: [1, 1.15, 1] } : { scale: 1 }}
@@ -170,6 +186,9 @@ export default function ServiceAreas() {
                       {/* Subtle pulsing background ring, larger when active */}
                       <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lush-yellow/20 mix-blend-screen transition-all duration-500 ease-in-out ${selectedLocation?.id === loc.id || activePin === loc.id ? 'w-16 h-16 animate-ping' : 'w-8 h-8 opacity-0'}`} />
                     </motion.div>
+                    
+                    {/* Focus ring for accessibility */}
+                    <span className="absolute inset-[-4px] rounded-full ring-2 ring-lush-yellow opacity-0 group-focus-visible:opacity-100 transition-opacity" />
                     
                     <AnimatePresence>
                       {activePin === loc.id && (
@@ -200,10 +219,10 @@ export default function ServiceAreas() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 right-0 h-full w-full sm:w-80 bg-[#111]/95 backdrop-blur-xl border-l border-white/10 z-40 p-8 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+              className="absolute top-0 right-0 h-full w-full sm:w-80 bg-[#111]/95 backdrop-blur-xl border-l border-white/10 z-40 p-4 max-[480px]:p-4 sm:p-8 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
               <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                <h3 className="text-xl font-display text-white">{selectedLocation.name}</h3>
+                <h3 className="text-xl max-[480px]:text-lg font-display text-white">{selectedLocation.name}</h3>
                 <button 
                   onClick={() => setSelectedLocation(null)}
                   className="text-white/50 hover:text-white transition-colors"
@@ -214,12 +233,12 @@ export default function ServiceAreas() {
               </div>
               
               <div className="flex-1 overflow-y-auto">
-                <div className="mb-6 flex gap-4 bg-white/5 border border-white/10 rounded-md p-4 items-center">
-                  <Navigation className="text-lush-yellow shrink-0" size={24} />
+                <div className="mb-6 flex gap-3 max-[480px]:gap-2 bg-white/5 border border-white/10 rounded-md p-3 sm:p-4 items-center">
+                  <Navigation className="text-lush-yellow shrink-0" size={20} />
                   <div>
-                    <p className="text-xs text-white/50 uppercase tracking-widest mb-1">From City Center</p>
-                    <p className="text-sm font-semibold text-white">
-                      ~{calculateDistance(selectedLocation).mins} mins <span className="text-white/40 font-normal">({calculateDistance(selectedLocation).km} km)</span>
+                    <p className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">From City Center</p>
+                    <p className="text-xs sm:text-sm font-semibold text-white">
+                      ~{calculateDistance(selectedLocation).mins} mins <span className="text-white/40 font-normal max-[480px]:block">({calculateDistance(selectedLocation).km} km)</span>
                     </p>
                   </div>
                 </div>

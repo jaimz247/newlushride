@@ -1,49 +1,98 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, X, Info, ChevronLeft, ChevronRight, MessageCircle, Shield, History, Star, ArrowLeftRight } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
 import { toast } from 'sonner';
 
 const fleet = [
   {
-    name: 'Luxury',
-    subtitle: 'Lexus RX 350 F-Sport (2025)',
-    images: ['/lexus1.jpg', '/lexus2.jpg', '/interior.jpg'],
+    name: 'Lush Luxury',
+    subtitle: 'Lexus RX 350 / Premium SUV Edition',
+    images: [
+      'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&w=1200&q=80',
+      '/interior.jpg'
+    ],
     specs: {
-      engine: '2.4L Turbo 4-Cylinder',
-      efficiency: '24 MPG Combined',
+      engine: '3.5L V6 dual VVT-i',
+      efficiency: '22 MPG Combined',
       capacity: '5 Passengers'
     },
-    overview: 'The Lexus RX 350 F-Sport brings together agile handling, bold styling, and intuitive technology. Perfect for executive transfers, offering a quiet, refined interior and advanced suspension for a smooth ride in the city.',
-    safety: 'Lexus Safety System+ 3.0, Pre-Collision System, Lane Departure Alert',
-    history: 'Direct from manufacturer, pristine condition, full dealer service history.'
+    comfortFeatures: [
+      'Dual-zone executive climate control',
+      'Semi-aniline active heated/ventilated seats',
+      'Mark Levinson 15-speaker premium spatial audio',
+      'Premium sound-isolating double acoustic glass'
+    ],
+    safetyFeatures: [
+      'Lexus Safety System+ luxury suite',
+      'Dual active radar dynamic cruise tracking',
+      'Pre-collision brake mitigation & pedestrian eye',
+      'Intuitive rear and surround sonar park radars'
+    ],
+    overview: 'The Lush Luxury tier features carefully maintained Lexus RX 350 models from the premium SUV era. Known for their timeless reliability, quiet cabins, and soft leather seating, they offer an elite-class experience at an accessible entry-point.',
+    safety: 'Lexus Safety System, Blind Spot Monitor, Intuitive Parking Assist',
+    history: 'Direct manufacturer acquisitions, undergoes standard 120-point mechanical check daily.'
   },
   {
-    name: 'Executive',
-    subtitle: 'Range Rover SE (2026)',
-    images: ['/range 2.jpg', '/range 1.jpg', '/range 3.jpg', '/Range interior.jpg'],
+    name: 'Lush Executive',
+    subtitle: 'Range Rover SE / Prestige Class',
+    images: [
+      'https://images.unsplash.com/photo-1608508491873-a80974b8826d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1626847037657-fd3622613ce3?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80',
+      '/Range interior.jpg'
+    ],
     specs: {
-      engine: '3.0L Inline-6 MHEV',
-      efficiency: '21 MPG Combined',
+      engine: '3.0L Supercharged V6 MHEV',
+      efficiency: '20 MPG Combined',
       capacity: '5 Passengers'
     },
-    overview: 'The Range Rover SE represents the pinnacle of luxury SUVs. Unmatched off-road capability fused with exceptional on-road refinement. Enjoy the spacious cabin crafted with premium materials for maximum comfort.',
-    safety: '3D Surround Camera, Adaptive Cruise Control with Steering Assist, Blind Spot Assist',
-    history: 'Brand new 2026 model, strictly chauffeur-driven, daily detailed.'
+    comfortFeatures: [
+      'Four-zone ionized active clean cabin air',
+      'Hot stone cabin customized massage seating',
+      '1700W Meridian™ premium surround theater',
+      'Adaptive variable air suspension overrides'
+    ],
+    safetyFeatures: [
+      'All-Terrain Progress Control (ATPC) heavy weather',
+      '3D panoramic immersive surround camera',
+      'Tinted executive private viewing shades',
+      'Lane keeping automatic steering guidance'
+    ],
+    overview: 'Representing true metropolitan prestige, our Lush Executive tier presents Range Rover SE models. Perfectly suited for senior executives and diplomats looking for high-status, comfortable transits inside and out of Lagos.',
+    safety: 'Adaptive Cruise Control with Steering Assist, 3D Surround View, Lane Keep Assist',
+    history: 'Exclusively dealer-maintained, strictly chauffeur-driven, meticulous exterior conditioning.'
   },
   {
-    name: 'Royal',
-    subtitle: 'Toyota Land Cruiser Prado (2025)',
-    images: ['/Toyota land cruiser.jpg', '/Toyota land cruiser2.jpg', '/Toyota-RAV4 2026.jpg', '/Toyota-RAV4-2026 2.jpg'],
+    name: 'Lush Royale',
+    subtitle: 'Toyota Land Cruiser Prado / Armored Suite',
+    images: [
+      '/Toyota land cruiser.jpg',
+      '/Toyota land cruiser2.jpg',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80'
+    ],
     specs: {
-      engine: '2.4L i-FORCE MAX Hybrid',
+      engine: '2.8L Turbo Diesel / Hybrid Max',
       efficiency: '23 MPG Combined',
       capacity: '7 Passengers'
     },
-    overview: 'Commanding presence with legendary reliability. The Land Cruiser Prado offers unmatched durability and dominant stance, making it ideal for commanding the roads with absolute peace of mind.',
+    comfortFeatures: [
+      'Reclining rear power captain executive chairs',
+      'Integrated cooler box cooling center suite',
+      'Dual rear-seat HD entertainment media screens',
+      'Dynamic premium comfort KDSS suspension tuning'
+    ],
+    safetyFeatures: [
+      'Tactical B6-level high armoring cage options',
+      'Emergency run-flat heavy tire systems',
+      'Infrared high-resolution night sight vision',
+      'PA siren and external emergency integrations'
+    ],
+    overview: 'The sovereign standard of transit. Our Lush Royale tier showcases absolute modern masterpieces, including robust Toyota Land Cruiser Prado editions. Complete with state-of-the-art climate control, premier security, public-safety specifications, and optional B6-level armor protection.',
     safety: 'Toyota Safety Sense 3.0, Proactive Driving Assist, B6 Armoring options available',
-    history: 'Exclusively procured for our royal tier clients, rigorously maintained.'
+    history: 'Brand-new elite fleet acquisitions, direct-from-factory bespoke setups, daily detailed and security cleared.'
   }
 ];
 
@@ -58,11 +107,12 @@ const containerVariants = {
 };
 
 const itemVariants: any = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, scale: 0.95, y: 35 },
   visible: { 
     opacity: 1, 
+    scale: 1,
     y: 0, 
-    transition: { duration: 0.8, ease: "easeOut" } 
+    transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] } 
   }
 };
 
@@ -97,7 +147,7 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
           transition={{ duration: 0.3 }}
           className="w-full h-full relative"
         >
-          <FadeImage src={images[currentIndex]} alt={`${alt} - View ${currentIndex + 1} of ${images.length}`} className="w-full h-full object-cover animate-kenburns" />
+          <FadeImage src={images[currentIndex]} alt={`Detailed view of ${alt} showing luxury features - View ${currentIndex + 1} of ${images.length}`} className="w-full h-full object-cover animate-kenburns" />
         </motion.div>
       </AnimatePresence>
       
@@ -135,8 +185,168 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
   );
 }
 
+function VehicleCard({
+  tier,
+  onQuickView,
+  onFullGallery,
+  onBook,
+  onCompare,
+  isCompared
+}: {
+  tier: typeof fleet[0];
+  onQuickView: () => void;
+  onFullGallery: () => void;
+  onBook: () => void;
+  onCompare: () => void;
+  isCompared: boolean;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [showSpecsTooltip, setShowSpecsTooltip] = useState(false);
+  
+  // Custom parallax scroll effect tracking individual card position
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"]
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [-20, 20]);
+
+  return (
+    <motion.div 
+      ref={cardRef}
+      variants={itemVariants}
+      whileHover={{ scale: 1.01, y: -6 }}
+      className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-4 sm:p-6 hover:border-lush-yellow/30 hover:shadow-2xl hover:shadow-lush-yellow/10 transition-all duration-500 will-change-transform"
+    >
+      {/* Parallax Image Frame */}
+      <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative group-hover:shadow-[0_0_20px_rgba(249,211,0,0.15)] transition-shadow">
+         <motion.div 
+           style={{ y }}
+           className="absolute -top-[15%] -bottom-[15%] left-0 right-0 h-[130%] w-full z-0"
+         >
+           <VehicleCarousel images={tier.images} alt={`${tier.name} class vehicle showing ${tier.subtitle}`} />
+         </motion.div>
+         
+         {/* Subtle elegant category typography overlay tag */}
+         <div className="absolute top-4 left-4 z-20 pointer-events-none">
+           <span className="backdrop-blur-md bg-black/60 border border-lush-yellow/30 text-lush-yellow text-[9px] uppercase tracking-[0.2em] font-semibold px-3 py-1.5 rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+             {tier.name}
+           </span>
+         </div>
+
+         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 pointer-events-none z-10">
+           <button 
+             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(); }}
+             className="bg-lush-yellow text-black pointer-events-auto px-6 py-2.5 rounded-full text-xs uppercase tracking-widest font-semibold hover:bg-white transition-colors"
+           >
+             Quick View
+           </button>
+           <button 
+             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onFullGallery(); }}
+             className="bg-charcoal/80 backdrop-blur-md pointer-events-auto px-6 py-2 rounded-full text-white text-[10px] uppercase tracking-widest font-semibold border border-white/10 hover:bg-white/20 transition-colors"
+           >
+             Full Gallery
+           </button>
+         </div>
+      </div>
+
+      <div className="flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-display text-2xl text-white">{tier.name}</h3>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onQuickView(); }} 
+            className="text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded bg-white/5 p-1.5 hover:bg-white/10"
+            aria-label={`View details for ${tier.name}`}
+          >
+            <Info size={16} />
+          </button>
+        </div>
+        <p className="text-sm font-light text-lush-yellow mb-4 leading-relaxed">{tier.subtitle}</p>
+        
+        {/* Rapid Technical Specs Summary Badges */}
+        <div className="flex flex-wrap gap-1.5 mb-6 relative">
+          <span className="text-[9px] uppercase tracking-widest bg-white/[0.03] border border-white/10 text-white/70 py-1 px-2.5 rounded">
+            {tier.specs.capacity}
+          </span>
+          <span className="text-[9px] uppercase tracking-widest bg-white/[0.03] border border-white/10 text-white/70 py-1 px-2.5 rounded text-ellipsis overflow-hidden max-w-[120px]">
+            {tier.specs.engine.split(' ')[0]} Engine
+          </span>
+          
+          {/* Interactive Feature Tooltip Badge */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setShowSpecsTooltip(true)}
+            onMouseLeave={() => setShowSpecsTooltip(false)}
+            onClick={(e) => { e.stopPropagation(); setShowSpecsTooltip(!showSpecsTooltip); }}
+          >
+            <span className="text-[9px] uppercase tracking-widest bg-lush-yellow/10 border border-lush-yellow/30 text-lush-yellow py-1 px-2.5 rounded cursor-pointer flex items-center gap-1 hover:bg-lush-yellow/20 transition-all select-none">
+              Premium specs ✦
+            </span>
+            
+            <AnimatePresence>
+              {showSpecsTooltip && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute bottom-full left-0 mb-3 w-64 bg-[#0A0A0A]/95 backdrop-blur-xl border border-lush-yellow/30 p-4 rounded-xl shadow-2xl z-50 text-left pointer-events-none"
+                >
+                  <h4 className="text-[10px] uppercase tracking-widest text-lush-yellow font-semibold mb-2 pb-1 border-b border-white/10 flex justify-between items-center">
+                    <span>Premium Amenities</span>
+                    <span className="text-[8px] text-white/40">Guaranteed</span>
+                  </h4>
+                  <ul className="space-y-1.5 text-[11px] font-light text-white/90">
+                    <li className="flex items-center gap-1.5">
+                      <span className="text-lush-yellow text-[9px]">✦</span> Leather Upholstery (Premium Grade)
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="text-lush-yellow text-[9px]">✦</span> Premium Sound System (Surround Audios)
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="text-lush-yellow text-[9px]">✦</span> Adaptive Cruise Control (Assisted)
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="text-lush-yellow text-[9px]">✦</span> 360° Safety & Active Monitoring
+                    </li>
+                  </ul>
+                  <div className="absolute top-full left-6 -mt-1 h-2 w-2 rotate-45 border-r border-b border-lush-yellow/30 bg-[#0A0A0A]/95" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="mt-auto grid grid-cols-2 max-[400px]:grid-cols-1 gap-2">
+          <button 
+            onClick={onBook}
+            className="inline-flex items-center justify-center py-2.5 bg-white text-black text-[10px] tracking-widest uppercase font-semibold rounded-md hover:bg-lush-yellow transition-colors w-full"
+          >
+            Book Now
+          </button>
+          <a 
+            href={`https://wa.me/2347037404784?text=${encodeURIComponent(`Hello, I'm inquiring about the premium ${tier.name} tier (${tier.subtitle}).`)}`}
+            target="_blank" rel="noreferrer"
+            className="inline-flex items-center justify-center py-2.5 bg-[#111] border border-white/10 text-white text-[10px] tracking-widest uppercase font-semibold rounded-md hover:border-white/30 transition-colors w-full"
+          >
+            <MessageCircle size={14} className="mr-1.5" /> Concierge
+          </a>
+        </div>
+        <button 
+          onClick={onCompare}
+          className={`mt-2 flex items-center justify-center py-2.5 w-full border border-white/10 text-[10px] tracking-widest uppercase font-semibold rounded-md transition-colors ${isCompared ? 'bg-lush-yellow text-black border-lush-yellow' : 'bg-transparent text-white/70 hover:border-white/30 hover:text-white'}`}
+        >
+          <ArrowLeftRight size={14} className="mr-1.5" /> 
+          {isCompared ? 'Selected for Compare' : 'Compare'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Fleet() {
+  const [filterTier, setFilterTier] = useState<string>('All');
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [fleetData, setFleetData] = useState<typeof fleet>(fleet);
   const [expandedVehicle, setExpandedVehicle] = useState<typeof fleet[0] | null>(null);
   const [galleryVehicle, setGalleryVehicle] = useState<typeof fleet[0] | null>(null);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -144,10 +354,22 @@ export default function Fleet() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    fetch('/api/site-config')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error("Unable to fetch configuration");
+      })
+      .then(data => {
+        if (data && data.fleet) {
+          setFleetData(data.fleet);
+        }
+      })
+      .catch(err => {
+        console.log("Using static local fallback fleet config", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const toggleCompare = (tierName: string) => {
@@ -165,7 +387,7 @@ export default function Fleet() {
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "itemListElement": fleet.map((tier, index) => ({
+    "itemListElement": fleetData.map((tier, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "item": {
@@ -188,19 +410,34 @@ export default function Fleet() {
           transition={{ duration: 0.8 }}
           className="mb-16"
         >
-          <div className="max-w-3xl">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display mb-6 text-white leading-tight">
-              Exclusive Fleet, Tailored<br/> for Every Journey
-            </h2>
-            <p className="text-lg text-muted-2 font-light leading-relaxed mb-8">
-              Discover the distinguished vehicle classes of LushRide. From Business Class sophistication to Luxe prestige, every ride in Lagos combines absolute comfort, style, and performance — ensuring you travel in true VIP fashion.
-            </p>
-            <button
-               onClick={() => setSelectedTier('General Inquiry')}
-               className="px-8 py-3 border border-white/30 text-lush-yellow text-xs tracking-[0.2em] uppercase hover:border-lush-yellow hover:bg-lush-yellow/10 transition-colors rounded-sm"
-            >
-              Request a Quote
-            </button>
+          <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
+            <div className="max-w-3xl">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-display mb-6 text-white leading-tight">
+                Exclusive Fleet, Tailored<br/> for Every Journey
+              </h2>
+              <p className="text-lg text-muted-2 font-light leading-relaxed mb-8">
+                Discover the distinguished vehicle classes of LushRide. From Business Class sophistication to Luxe prestige, every ride in Lagos combines absolute comfort, style, and performance — ensuring you travel in true VIP fashion.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <button
+                   onClick={() => setSelectedTier('General Inquiry')}
+                   className="px-8 py-3 border border-white/30 text-lush-yellow text-xs tracking-[0.2em] uppercase hover:border-lush-yellow hover:bg-lush-yellow/10 transition-colors rounded-sm shrink-0"
+                >
+                  Request a Quote
+                </button>
+                <div className="flex bg-white/5 p-1.5 rounded-lg border border-white/10 overflow-x-auto whitespace-nowrap max-w-full hide-scrollbars">
+                  {['All', 'Luxury', 'Executive', 'Royal'].map(tier => (
+                    <button
+                      key={tier}
+                      onClick={() => setFilterTier(tier)}
+                      className={`px-5 py-2 text-[10px] uppercase tracking-widest font-semibold rounded-md transition-all ${filterTier === tier ? 'bg-lush-yellow text-black' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -213,66 +450,30 @@ export default function Fleet() {
         >
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 animate-pulse">
-                <div className="aspect-[16/10] w-full bg-white/5 rounded-lg mb-6" />
-                <div className="w-1/2 h-8 bg-white/5 mb-4 rounded" />
-                <div className="w-3/4 h-4 bg-white/5 mb-8 rounded" />
+              <div key={i} className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 animate-pulse overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent z-10 pointer-events-none" />
+                <div className="aspect-[16/10] w-full bg-white/[0.03] rounded-lg mb-6 relative overflow-hidden" />
+                <div className="w-1/2 h-7 bg-white/[0.04] mb-4 rounded" />
+                <div className="w-3/4 h-3 bg-white/[0.02] mb-2 rounded" />
+                <div className="w-2/3 h-3 bg-white/[0.02] mb-8 rounded" />
                 <div className="mt-auto grid grid-cols-2 gap-2 mb-2">
-                  <div className="h-9 bg-white/5 rounded-md" />
-                  <div className="h-9 bg-white/5 rounded-md" />
+                  <div className="h-10 bg-white/[0.03] rounded-md" />
+                  <div className="h-10 bg-white/[0.03] rounded-md" />
                 </div>
-                <div className="h-9 w-full bg-white/5 rounded-md mt-2" />
+                <div className="h-10 w-full bg-white/[0.03] rounded-md mt-2 relative overflow-hidden" />
               </div>
             ))
           ) : (
-            fleet.map((tier) => (
-              <motion.div 
+            (filterTier === 'All' ? fleetData : fleetData.filter(t => t.name === filterTier)).map((tier) => (
+              <VehicleCard
                 key={tier.name}
-                variants={itemVariants}
-                className="group relative bg-[#0A0A0A] border border-white/5 rounded-xl flex flex-col p-6 hover:border-lush-yellow/30 hover:-translate-y-2 hover:shadow-2xl hover:shadow-lush-yellow/10 transition-all duration-500"
-              >
-                <div className="aspect-[16/10] w-full overflow-hidden mb-6 rounded-lg relative cursor-pointer group-hover:shadow-[0_0_20px_rgba(249,211,0,0.15)] transition-shadow" onClick={() => setGalleryVehicle(tier)}>
-                   <VehicleCarousel images={tier.images} alt={tier.name} />
-                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                     <span className="bg-charcoal/80 backdrop-blur-md px-4 py-2 rounded-full text-white text-[10px] uppercase tracking-widest font-semibold border border-white/10">View Gallery</span>
-                   </div>
-                </div>
-                <div className="flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-display text-2xl text-white">{tier.name}</h3>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setExpandedVehicle(tier); }} 
-                      className="text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded bg-white/5 p-1.5 hover:bg-white/10"
-                      aria-label={`View details for ${tier.name}`}
-                    >
-                      <Info size={16} />
-                    </button>
-                  </div>
-                  <p className="text-sm font-light text-lush-yellow mb-4 leading-relaxed">{tier.subtitle}</p>
-                  <div className="mt-auto grid grid-cols-2 gap-2">
-                    <button 
-                      onClick={() => setSelectedTier(tier.name)}
-                      className="inline-flex items-center justify-center py-2.5 bg-white text-black text-[10px] tracking-widest uppercase font-semibold rounded-md hover:bg-lush-yellow transition-colors w-full"
-                    >
-                      Book Now
-                    </button>
-                    <a 
-                      href={`https://wa.me/2347037404784?text=${encodeURIComponent(`Hello, I'd like to ask a question regarding the ${tier.name} tier (${tier.subtitle}).`)}`}
-                      target="_blank" rel="noreferrer"
-                      className="inline-flex items-center justify-center py-2.5 bg-[#111] border border-white/10 text-white text-[10px] tracking-widest uppercase font-semibold rounded-md hover:border-white/30 transition-colors w-full"
-                    >
-                      <MessageCircle size={14} className="mr-1.5" /> Concierge
-                    </a>
-                  </div>
-                  <button 
-                    onClick={() => toggleCompare(tier.name)}
-                    className={`mt-2 flex items-center justify-center py-2.5 w-full border border-white/10 text-[10px] tracking-widest uppercase font-semibold rounded-md transition-colors ${compareList.includes(tier.name) ? 'bg-lush-yellow text-black border-lush-yellow' : 'bg-transparent text-white/70 hover:border-white/30 hover:text-white'}`}
-                  >
-                    <ArrowLeftRight size={14} className="mr-1.5" /> 
-                    {compareList.includes(tier.name) ? 'Selected for Compare' : 'Compare'}
-                  </button>
-                </div>
-              </motion.div>
+                tier={tier}
+                onQuickView={() => setExpandedVehicle(tier)}
+                onFullGallery={() => setGalleryVehicle(tier)}
+                onBook={() => setSelectedTier(tier.name)}
+                onCompare={() => toggleCompare(tier.name)}
+                isCompared={compareList.includes(tier.name)}
+              />
             ))
           )}
         </motion.div>
@@ -363,12 +564,12 @@ export default function Fleet() {
               
               <div className="grid gap-6 overflow-x-auto pb-4" style={{ gridTemplateColumns: `repeat(${compareList.length}, minmax(280px, 1fr))` }}>
                 {compareList.map(tierName => {
-                  const vehicle = fleet.find(f => f.name === tierName);
+                  const vehicle = fleetData.find(f => f.name === tierName);
                   if (!vehicle) return null;
                   return (
                     <div key={tierName} className="flex flex-col gap-6">
                       <div className="aspect-[16/10] bg-[#111] rounded-lg overflow-hidden relative">
-                        <FadeImage src={vehicle.images[0]} alt={vehicle.name} className="w-full h-full object-cover" />
+                        <FadeImage src={vehicle.images[0]} alt={`${vehicle.name} class premium chauffeured vehicle comparison view`} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <span className="text-lush-yellow text-xs tracking-widest uppercase font-semibold">{vehicle.name} Class</span>
@@ -425,7 +626,7 @@ export default function Fleet() {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-3xl flex flex-col md:flex-row"
+              className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto relative shadow-3xl flex flex-col md:flex-row"
               onClick={e => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -440,33 +641,70 @@ export default function Fleet() {
               </button>
 
               {/* Left Side: Image Slider */}
-              <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
+              <div className="w-full md:w-1/2 aspect-video md:aspect-auto md:min-h-[450px]">
                 <VehicleCarousel images={expandedVehicle.images} alt={expandedVehicle.name} />
               </div>
 
               {/* Right Side: Details */}
-              <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col">
+              <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col md:max-h-[85vh] overflow-y-auto">
                 <span className="text-lush-yellow text-xs tracking-widest uppercase font-semibold mb-2">{expandedVehicle.name} Class</span>
                 <h3 id="modal-title" className="text-3xl font-display text-white mb-6">{expandedVehicle.subtitle}</h3>
                 
-                <p className="text-muted-1 font-light leading-relaxed mb-8">{expandedVehicle.overview}</p>
+                <p className="text-muted-1 font-light leading-relaxed mb-6">{expandedVehicle.overview}</p>
 
                 <div className="space-y-6 mb-8">
+                  {/* Detailed Specs Banner */}
+                  <div className="grid grid-cols-3 gap-2 border-y border-white/10 py-4 bg-white/[0.02] px-3 rounded-lg">
+                    <div className="text-center">
+                      <span className="text-[9px] uppercase tracking-wider text-muted-2 block mb-1">Drivetrain</span>
+                      <span className="text-[11px] font-medium text-white block truncate" title={expandedVehicle.specs.engine}>{expandedVehicle.specs.engine}</span>
+                    </div>
+                    <div className="text-center border-x border-white/10">
+                      <span className="text-[9px] uppercase tracking-wider text-muted-2 block mb-1">Efficiency</span>
+                      <span className="text-[11px] font-medium text-white block truncate" title={expandedVehicle.specs.efficiency}>{expandedVehicle.specs.efficiency}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-[9px] uppercase tracking-wider text-muted-2 block mb-1">Capacity</span>
+                      <span className="text-[11px] font-medium text-white block truncate" title={expandedVehicle.specs.capacity}>{expandedVehicle.specs.capacity}</span>
+                    </div>
+                  </div>
+
+                  {/* Comfort features */}
                   <div>
-                    <h4 className="flex items-center text-white text-sm font-semibold mb-2"><Star size={16} className="mr-2 text-lush-yellow" /> Technical Specifications</h4>
-                    <ul className="text-sm font-light text-muted-1 space-y-1">
-                      <li>• {expandedVehicle.specs.engine}</li>
-                      <li>• {expandedVehicle.specs.efficiency}</li>
-                      <li>• {expandedVehicle.specs.capacity}</li>
+                    <h4 className="flex items-center text-white text-xs font-semibold uppercase tracking-wider mb-2">
+                      <Star size={14} className="mr-2 text-lush-yellow" /> Comfort & Convenience Amenities
+                    </h4>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-light text-muted-1">
+                      {expandedVehicle.comfortFeatures?.map((feat, idx) => (
+                        <li key={idx} className="flex items-start gap-1 p-1 bg-white/[0.02] rounded border border-white/5">
+                          <span className="text-lush-yellow mr-1">•</span>
+                          <span>{feat}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
+
+                  {/* Safety features */}
                   <div>
-                    <h4 className="flex items-center text-white text-sm font-semibold mb-2"><History size={16} className="mr-2 text-lush-yellow" /> Vehicle History</h4>
-                    <p className="text-sm font-light text-muted-1">{expandedVehicle.history}</p>
+                    <h4 className="flex items-center text-white text-xs font-semibold uppercase tracking-wider mb-2">
+                      <Shield size={14} className="mr-2 text-lush-yellow" /> Safety & Protective Specifications
+                    </h4>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-light text-muted-1">
+                      {expandedVehicle.safetyFeatures?.map((feat, idx) => (
+                        <li key={idx} className="flex items-start gap-1 p-1 bg-white/[0.02] rounded border border-white/5">
+                          <span className="text-green-400 mr-1">✓</span>
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div>
-                    <h4 className="flex items-center text-white text-sm font-semibold mb-2"><Shield size={16} className="mr-2 text-lush-yellow" /> Safety Features</h4>
-                    <p className="text-sm font-light text-muted-1">{expandedVehicle.safety}</p>
+
+                  {/* History Vetting */}
+                  <div className="border-t border-white/5 pt-4">
+                    <h4 className="flex items-center text-white text-xs font-semibold uppercase tracking-wider mb-2">
+                      <History size={14} className="mr-2 text-lush-yellow" /> Service History & Support
+                    </h4>
+                    <p className="text-xs font-light text-muted-2 leading-relaxed">{expandedVehicle.history}</p>
                   </div>
                 </div>
 
@@ -537,9 +775,9 @@ export default function Fleet() {
                     className="w-full bg-[#111] border border-white/10 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-lush-yellow transition-colors appearance-none"
                   >
                     <option value="General Inquiry">General Inquiry</option>
-                    <option value="Luxury">Luxury (Lexus RX 350)</option>
-                    <option value="Executive">Executive (Range Rover SE)</option>
-                    <option value="Royal">Royal (Toyota Prado / Armored)</option>
+                    <option value="Lush Luxury">Lush Luxury (2014-2018)</option>
+                    <option value="Lush Executive">Lush Executive (2018-2022)</option>
+                    <option value="Lush Royale">Lush Royale (2023-2026)</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

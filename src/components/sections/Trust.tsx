@@ -11,7 +11,7 @@ const TRUST_FEATURES = [
   {
     icon: EyeOff,
     title: "Guaranteed Discretion",
-    description: "Your business remains yours. All LushRide Pilots are bound by strict non-disclosure agreements. Vehicles feature privacy options to create a secure mobile sanctuary."
+    description: "Your business remains yours. All LushRide Chauffeurs are bound by strict non-disclosure agreements. Vehicles feature privacy options to create a secure mobile sanctuary."
   },
   {
     icon: MapPin,

@@ -10,24 +10,24 @@ interface I18nContextType {
 
 const translations: Record<Language, Record<string, string>> = {
   EN: {
-    'nav.about': 'WHO WE ARE',
+    'nav.about': 'ABOUT',
     'nav.services': 'SERVICES',
-    'nav.fleet': 'TIERS',
+    'nav.fleet': 'FLEET',
     'nav.hubs': 'HUBS',
     'nav.partner': 'PARTNERS',
-    'nav.quote': 'Request a Quote',
+    'nav.quote': 'REQUEST QUOTE',
     'hero.title': 'The Sovereign of\nLagos Transit',
     'hero.subtitle': 'Lagos\' finest premium chauffeur service. Absolute comfort, uncompromising privacy, and precision scheduling for the elite.',
     'hero.cta': 'Book Your Journey',
     'hero.secondary': 'Explore the Fleet'
   },
   FR: {
-    'nav.about': 'QUI SOMMES-NOUS',
+    'nav.about': 'À PROPOS',
     'nav.services': 'SERVICES',
-    'nav.fleet': 'NIVEAUX',
+    'nav.fleet': 'FLOTTE',
     'nav.hubs': 'CENTRES',
     'nav.partner': 'PARTENAIRES',
-    'nav.quote': 'Demander un devis',
+    'nav.quote': 'DEVIS',
     'hero.title': 'Le Souverain du\nTransit de Lagos',
     'hero.subtitle': 'Le service de chauffeur premium le plus raffiné de Lagos. Confort absolu, vie privée sans compromis et planification de précision pour l\'élite.',
     'hero.cta': 'Réservez votre voyage',

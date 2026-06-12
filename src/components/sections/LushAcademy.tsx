@@ -42,16 +42,15 @@ export default function LushAcademy() {
               The Lush Academy.
             </h3>
             <p className="text-lg text-muted-2 font-light leading-relaxed mb-6">
-              A premium vehicle is only half the experience. The true luxury of LushRide lies in the hands at the wheel. We do not hire drivers; we train and certify <span className="font-medium text-lush-yellow">Pilots</span>.
+              A premium vehicle is only half the experience. The true luxury of LushRide lies in the hands at the wheel. We do not hire drivers; we train and certify <span className="font-medium text-lush-yellow">Chauffeurs</span>.
             </p>
             <p className="text-lg text-muted-2 font-light leading-relaxed mb-12">
-              Every Pilot endures rigorous training at The Lush Academy. From evasive driving techniques and deep local navigation expertise to white-glove etiquette and absolute discretion. They are trained to anticipate your needs and fade into the background.
+              Every Chauffeur endures rigorous training at The Lush Academy. From evasive driving techniques and deep local navigation expertise to white-glove etiquette and absolute discretion. They are trained to anticipate your needs and fade into the background.
             </p>
             
             <ul className="space-y-6">
               {[
                 "Rigorous Background & Security Vetting",
-                "Advanced Defensive Driving Certification",
                 "Luxury Hospitality & Etiquette Training",
                 "Signed Non-Disclosure Agreements for Discretion"
               ].map((item, idx) => (

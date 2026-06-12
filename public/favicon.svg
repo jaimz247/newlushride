@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />
+      <stop offset="50%" stop-color="#D1A153" />
+      <stop offset="100%" stop-color="#8D6E1A" />
+    </linearGradient>
+    <linearGradient id="gold-bright" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="40%" stop-color="#F2C94C" />
+      <stop offset="100%" stop-color="#9C7328" />
+    </linearGradient>
+  </defs>
+  <!-- Beautiful dark glossy circular backdrop and double gold-gradient margins -->
+  <circle cx="256" cy="256" r="240" fill="#050505" stroke="url(#gold)" stroke-width="12" />
+  <circle cx="256" cy="256" r="222" fill="none" stroke="url(#gold)" stroke-width="2" stroke-dasharray="8 6" opacity="0.6" />
+  
+  <!-- Outer glowing rings -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#gold)" stroke-width="4" opacity="0.3" />
+
+  <!-- Elegant Crown Graphic -->
+  <path d="M256 125 L285 175 L335 150 L310 215 H202 L177 150 L227 175 Z" fill="url(#gold-bright)" />
+  <circle cx="256" cy="108" r="10" fill="url(#gold-bright)" />
+  <circle cx="339" cy="133" r="8" fill="url(#gold)" />
+  <circle cx="173" cy="133" r="8" fill="url(#gold)" />
+
+  <!-- Monogram styled 'L' and secondary ribbon frame -->
+  <path d="M190 230 H235 V305 C235 315 243 323 253 323 H312 C320 323 320 338 312 338 H215 C198 338 185 324 185 307 V240 C185 232 188 230 190 230 Z" fill="url(#gold-bright)" />
+  
+  <!-- Right elegant companion wing/curving slash finishing the monogram structure -->
+  <path d="M315 220 Q335 250 315 285 Q295 320 256 318" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round" opacity="0.8" />
+
+  <!-- Luxury Stars underneath -->
+  <g fill="url(#gold)">
+    <polygon points="256,380 261,390 271,391 264,398 266,408 256,402 246,408 248,398 241,391 251,390" />
+    <polygon points="215,372 219,380 228,381 222,387 224,396 215,391 206,396 208,387 202,381 211,380" opacity="0.85" />
+    <polygon points="297,372 301,380 310,381 304,387 306,396 297,391 288,396 290,387 284,381 293,380" opacity="0.85" />
+  </g>
+</svg>

@@ -14,7 +14,6 @@ export const LAGOS_LOCATIONS: Record<string, string> = {
   'banana highland': 'Banana Island',
   'banana island': 'Banana Island',
   'ajao state': 'Ajao Estate',
-  'festac': 'Festac Town',
   'surulere': 'Surulere',
   'yaba': 'Yaba',
   'maryland': 'Maryland',
