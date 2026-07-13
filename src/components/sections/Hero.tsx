@@ -331,6 +331,27 @@ export default function Hero() {
       setShowConfirmation(true);
 
       if (bookingData.pickUp && bookingData.dropOff) {
+        // Save to active rides for admin dispatch tracking
+        try {
+          const currentList = JSON.parse(localStorage.getItem('lush_active_rides') || '[]');
+          currentList.unshift({
+            id: 'RIDE-' + Math.floor(1000 + Math.random() * 9000),
+            passengerName: "Web Guest Passenger",
+            email: "guest@lushride.com",
+            pickup: bookingData.pickUp,
+            dropoff: bookingData.dropOff,
+            date: bookingData.date || new Date().toISOString().split('T')[0],
+            time: bookingData.time || "Immediate",
+            tier: "Lush Luxury",
+            status: "Pending",
+            chauffeur: "Unassigned",
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem('lush_active_rides', JSON.stringify(currentList));
+        } catch (e) {
+          console.error("Failed to store booking in shared local storage:", e);
+        }
+
         const newSearches = [{from: bookingData.pickUp, to: bookingData.dropOff}, ...recentSearches.filter(s => s.from !== bookingData.pickUp || s.to !== bookingData.dropOff)].slice(0, 5);
         setRecentSearches(newSearches);
         localStorage.setItem('lush_recent_searches', JSON.stringify(newSearches));

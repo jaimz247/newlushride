@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Lock, CheckCircle2, AlertCircle, Plus, Trash2, Save, 
   HelpCircle, Phone, Info, Car, FileText, LogOut, RefreshCw, Eye, Sparkles, AlertTriangle, Terminal,
-  Activity, Gauge, Zap, TrendingUp, Laptop, MousePointer
+  Activity, Gauge, Zap, TrendingUp, Laptop, MousePointer,
+  Inbox, Navigation, Users, Check, X, Clock, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteConfig } from '../../types';
@@ -468,12 +469,108 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'hero' | 'fleet' | 'faq' | 'contact' | 'logs' | 'performance'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'fleet' | 'faq' | 'contact' | 'logs' | 'performance' | 'leads' | 'dispatch'>('hero');
   const [errorLogs, setErrorLogs] = useState<FleetErrorLog[]>([]);
 
   // Token cache key
   const TOKEN_KEY = "lush_admin_token";
   const LOGS_KEY = "lush_fleet_error_logs";
+  const LEADS_WAITLIST_KEY = "lush_waitlist";
+  const LEADS_CONTACT_KEY = "lush_contact_submissions";
+  const ACTIVE_RIDES_KEY = "lush_active_rides";
+
+  const [waitlistLeads, setWaitlistLeads] = useState<any[]>([]);
+  const [contactLeads, setContactLeads] = useState<any[]>([]);
+  const [activeRides, setActiveRides] = useState<any[]>([]);
+  const [leadsSubTab, setLeadsSubTab] = useState<'waitlist' | 'contact'>('waitlist');
+  const [newRide, setNewRide] = useState({
+    passengerName: '',
+    email: '',
+    pickup: '',
+    dropoff: '',
+    tier: 'Lush Luxury',
+    chauffeur: 'Tunde Lambo'
+  });
+
+  const loadLeadsAndRides = () => {
+    try {
+      const waitlist = localStorage.getItem(LEADS_WAITLIST_KEY);
+      if (waitlist) {
+        setWaitlistLeads(JSON.parse(waitlist));
+      } else {
+        const seedWaitlist = [
+          { name: "Alhaji Aliko Bello", email: "a.bello@bellogroup.ng", time: new Date(Date.now() - 4 * 3600000).toISOString(), status: "Pending Invite" },
+          { name: "Chief Mrs. Adenike Balogun", email: "nike@balogunchambers.com", time: new Date(Date.now() - 24 * 3600000).toISOString(), status: "Invited" },
+          { name: "Femi Coker", email: "femi.coker@coker-capital.com", time: new Date(Date.now() - 48 * 3600000).toISOString(), status: "Accepted" }
+        ];
+        localStorage.setItem(LEADS_WAITLIST_KEY, JSON.stringify(seedWaitlist));
+        setWaitlistLeads(seedWaitlist);
+      }
+
+      const contacts = localStorage.getItem(LEADS_CONTACT_KEY);
+      if (contacts) {
+        setContactLeads(JSON.parse(contacts));
+      } else {
+        const seedContacts = [
+          { name: "Seyi Makinde Jr.", email: "seyi.jr@makinde-holdings.com", subject: "Bespoke Diplomatic Convoy", message: "We are hosting an international delegation of 12 executives in Victoria Island next month and require 4 bulletproof Land Cruiser Prados for 5 days. Please send an official corporate invoice and compliance terms.", time: new Date(Date.now() - 8 * 3600000).toISOString(), status: "New" },
+          { name: "Chioma Nze", email: "chioma@luxeevents.ng", subject: "Wedding Executive Shuttling", message: "Do you offer full-day chauffeur rental packages for executive SUVs? I need to book 3 Lexus RX 350 vehicles for high-profile family transit during our event on Banana Island.", time: new Date(Date.now() - 32 * 3600000).toISOString(), status: "Replied" }
+        ];
+        localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(seedContacts));
+        setContactLeads(seedContacts);
+      }
+
+      const rides = localStorage.getItem(ACTIVE_RIDES_KEY);
+      if (rides) {
+        setActiveRides(JSON.parse(rides));
+      } else {
+        const seedRides = [
+          {
+            id: 'RIDE-8942',
+            passengerName: "Chief Kola Ojo",
+            email: "k.ojo@ojoinvestments.com",
+            pickup: "Ikeja GRA (Lash Lounge)",
+            dropoff: "Victoria Island (The George Hotel)",
+            date: new Date().toISOString().split('T')[0],
+            time: "08:30 AM",
+            tier: "Lush Luxury",
+            status: "En Route",
+            chauffeur: "Tunde Lambo",
+            timestamp: new Date(Date.now() - 1800000).toISOString()
+          },
+          {
+            id: 'RIDE-1105',
+            passengerName: "Ambassador Adeleke",
+            email: "adeleke@embassy-gov.ng",
+            pickup: "Murtala Muhammed Airport (MMA Term 2)",
+            dropoff: "Ikoyi Diplomatic Residence",
+            date: new Date().toISOString().split('T')[0],
+            time: "10:15 AM",
+            tier: "Lush Executive",
+            status: "Passenger Boarded",
+            chauffeur: "Emeka Okafor",
+            timestamp: new Date(Date.now() - 3600000).toISOString()
+          },
+          {
+            id: 'RIDE-4702',
+            passengerName: "Federal Delegate Al-Hassan",
+            email: "al-hassan@senate-gov.ng",
+            pickup: "Eko Hotels & Suites",
+            dropoff: "Banana Island Private Gatehouse",
+            date: new Date().toISOString().split('T')[0],
+            time: "12:00 PM",
+            tier: "Lush Royale",
+            status: "Chauffeur Assigned",
+            chauffeur: "Command Sergeant Yusuf",
+            timestamp: new Date(Date.now() - 600000).toISOString()
+          }
+        ];
+        localStorage.setItem(ACTIVE_RIDES_KEY, JSON.stringify(seedRides));
+        setActiveRides(seedRides);
+      }
+    } catch (e) {
+      console.error("Failed to load leads and rides:", e);
+    }
+  };
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -484,6 +581,8 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
     } else {
       setIsLoading(false);
     }
+
+    loadLeadsAndRides();
 
     // Load error logs from localStorage
     const savedLogs = localStorage.getItem(LOGS_KEY);
@@ -949,6 +1048,30 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
             </button>
 
             <button
+              onClick={() => setActiveTab('dispatch')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
+                activeTab === 'dispatch' 
+                  ? 'bg-lush-yellow text-black font-semibold' 
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Navigation size={16} />
+              <span className="hidden md:inline uppercase tracking-widest text-xs">Live Dispatch Ops</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('leads')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
+                activeTab === 'leads' 
+                  ? 'bg-lush-yellow text-black font-semibold' 
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Users size={16} />
+              <span className="hidden md:inline uppercase tracking-widest text-xs">Leads & Inquiries</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('logs')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'logs' 
@@ -1373,6 +1496,511 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                       />
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Tab: Live Dispatch Ops */}
+              {activeTab === 'dispatch' && (
+                <div className="space-y-8 animate-fadeIn text-white">
+                  <div className="border-b border-white/5 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-display text-white uppercase tracking-widest mb-1">Live Operations & Dispatch Control</h2>
+                      <p className="text-xs text-[#999] uppercase tracking-wider">Monitor active chauffeur assignments, update passenger transit statuses, and book real-time transfers</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem(ACTIVE_RIDES_KEY);
+                          loadLeadsAndRides();
+                          toast.success("Active ride simulator reloaded with fresh demo bookings.");
+                          addErrorLog('info', 'Live Dispatch Reset', "Chauffeur dispatch roster and active ride simulation reloaded to default state.");
+                        }}
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-[11px] uppercase tracking-widest font-semibold rounded transition-colors flex items-center gap-1.5"
+                      >
+                        <RefreshCw size={12} /> Reload Simulation
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Summary Analytics */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-charcoal/20 border border-white/5 p-5 rounded-xl">
+                      <p className="text-[10px] text-[#aaa] uppercase tracking-widest mb-1">Active Operations</p>
+                      <p className="text-2xl font-display text-lush-yellow">
+                        {activeRides.filter(r => r.status !== 'Completed' && r.status !== 'Cancelled').length} Rides
+                      </p>
+                      <p className="text-[10px] text-[#666] mt-1 uppercase tracking-wider">Currently on Lagos highways</p>
+                    </div>
+                    <div className="bg-charcoal/20 border border-white/5 p-5 rounded-xl">
+                      <p className="text-[10px] text-[#aaa] uppercase tracking-widest mb-1">Operational Fleet Util</p>
+                      <p className="text-2xl font-display text-white">
+                        {Math.min(100, Math.round((activeRides.filter(r => r.status !== 'Completed' && r.status !== 'Cancelled').length / 3) * 100))}%
+                      </p>
+                      <p className="text-[10px] text-[#666] mt-1 uppercase tracking-wider">Based on 3 premium tiers</p>
+                    </div>
+                    <div className="bg-charcoal/20 border border-white/5 p-5 rounded-xl">
+                      <p className="text-[10px] text-[#aaa] uppercase tracking-widest mb-1">Chauffeur Status</p>
+                      <p className="text-2xl font-display text-green-400">5 Active</p>
+                      <p className="text-[10px] text-[#666] mt-1 uppercase tracking-wider">Professional vetted crew</p>
+                    </div>
+                    <div className="bg-charcoal/20 border border-white/5 p-5 rounded-xl">
+                      <p className="text-[10px] text-[#aaa] uppercase tracking-widest mb-1">Completed Transits</p>
+                      <p className="text-2xl font-display text-white">
+                        {activeRides.filter(r => r.status === 'Completed').length} Journeys
+                      </p>
+                      <p className="text-[10px] text-[#666] mt-1 uppercase tracking-wider">Perfect zero-incident records</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Live Dispatch Form */}
+                    <div className="lg:col-span-1 bg-charcoal/30 border border-white/5 p-6 rounded-xl h-fit space-y-6">
+                      <div className="border-b border-white/5 pb-4">
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Instant Dispatcher</h3>
+                        <p className="text-[10px] text-[#666] uppercase tracking-wider">Create a manual chauffeur dispatch</p>
+                      </div>
+
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!newRide.passengerName || !newRide.pickup || !newRide.dropoff) {
+                          toast.error("Required fields are missing.");
+                          return;
+                        }
+                        const id = 'RIDE-' + Math.floor(1000 + Math.random() * 9000);
+                        const created = {
+                          id,
+                          ...newRide,
+                          date: new Date().toISOString().split('T')[0],
+                          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                          status: "Pending",
+                          timestamp: new Date().toISOString()
+                        };
+                        setActiveRides(prev => {
+                          const updated = [created, ...prev];
+                          localStorage.setItem(ACTIVE_RIDES_KEY, JSON.stringify(updated));
+                          return updated;
+                        });
+                        toast.success(`Successfully dispatched Ride ${id}!`);
+                        addErrorLog('info', 'Chauffeur Dispatch', `Ride ${id} dispatched successfully for ${newRide.passengerName}.`);
+                        setNewRide({
+                          passengerName: '',
+                          email: '',
+                          pickup: '',
+                          dropoff: '',
+                          tier: 'Lush Luxury',
+                          chauffeur: 'Tunde Lambo'
+                        });
+                      }} className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Passenger Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Chief Alao Coker"
+                            value={newRide.passengerName}
+                            onChange={(e) => setNewRide(prev => ({ ...prev, passengerName: e.target.value }))}
+                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Contact Email (Optional)</label>
+                          <input
+                            type="email"
+                            placeholder="e.g. coker@gmail.com"
+                            value={newRide.email}
+                            onChange={(e) => setNewRide(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Pickup Spot *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Ikeja GRA"
+                              value={newRide.pickup}
+                              onChange={(e) => setNewRide(prev => ({ ...prev, pickup: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Dropoff Spot *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Lekki Phase 1"
+                              value={newRide.dropoff}
+                              onChange={(e) => setNewRide(prev => ({ ...prev, dropoff: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Vehicle Class</label>
+                            <select
+                              value={newRide.tier}
+                              onChange={(e) => setNewRide(prev => ({ ...prev, tier: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                            >
+                              <option value="Lush Luxury">Lush Luxury (Lexus)</option>
+                              <option value="Lush Executive">Lush Executive (Rover)</option>
+                              <option value="Lush Royale">Lush Royale (Prado)</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="block text-[9px] uppercase tracking-widest text-[#aaa]">Assign Chauffeur</label>
+                            <select
+                              value={newRide.chauffeur}
+                              onChange={(e) => setNewRide(prev => ({ ...prev, chauffeur: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/10 rounded-lg py-2 px-3 text-white text-xs outline-none focus:border-lush-yellow transition-all"
+                            >
+                              <option value="Tunde Lambo">Tunde Lambo</option>
+                              <option value="Emeka Okafor">Emeka Okafor</option>
+                              <option value="Command Sergeant Yusuf">Sergeant Yusuf</option>
+                              <option value="Babatunde Shola">Babatunde Shola</option>
+                              <option value="Olawale Jerry">Olawale Jerry</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="w-full bg-lush-yellow hover:bg-white text-black font-semibold text-xs py-3 rounded-lg uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 mt-2"
+                        >
+                          <Send size={12} /> Dispatch Chauffeur
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Active Rides Table */}
+                    <div className="lg:col-span-2 bg-charcoal/10 border border-white/5 rounded-xl overflow-hidden flex flex-col">
+                      <div className="p-5 border-b border-white/5 bg-charcoal/20">
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Active Operational Transit Queue</h3>
+                      </div>
+
+                      {activeRides.length === 0 ? (
+                        <div className="p-12 text-center text-white/40 flex-1 flex flex-col justify-center items-center">
+                          <Car size={32} className="text-white/20 mb-3" />
+                          <p className="text-xs uppercase tracking-widest mb-1 font-semibold">No Transits Scheduled</p>
+                          <p className="text-[11px] text-white/30 max-w-sm">
+                            Use the dispatcher form or book a ride on the front-end to launch a simulated executive transport.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-white/5 text-[9px] uppercase tracking-widest text-[#777] bg-black/30">
+                                <th className="py-3 px-4">Ride ID</th>
+                                <th className="py-3 px-4">Passenger / Class</th>
+                                <th className="py-3 px-4">Route Info</th>
+                                <th className="py-3 px-4">Status</th>
+                                <th className="py-3 px-4 text-right">Operations</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-xs">
+                              {activeRides.map((ride) => (
+                                <tr key={ride.id} className="hover:bg-white/5 transition-colors">
+                                  <td className="py-4 px-4 font-mono text-[10px] text-lush-yellow">{ride.id}</td>
+                                  <td className="py-4 px-4">
+                                    <div className="font-semibold text-white">{ride.passengerName}</div>
+                                    <div className="text-[9px] text-white/40 flex items-center gap-1.5 mt-0.5">
+                                      <Car size={10} /> {ride.tier} • {ride.chauffeur}
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <div className="text-white/90">{ride.pickup}</div>
+                                    <div className="text-[9px] text-[#999] mt-0.5">➔ {ride.dropoff}</div>
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
+                                      ride.status === 'Completed'
+                                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                        : ride.status === 'Cancelled'
+                                        ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                        : ride.status === 'Pending'
+                                        ? 'bg-white/5 text-[#aaa] border border-white/10'
+                                        : 'bg-lush-yellow/10 text-lush-yellow border border-lush-yellow/20'
+                                    }`}>
+                                      {ride.status}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-right space-x-1.5">
+                                    {ride.status !== 'Completed' && ride.status !== 'Cancelled' && (
+                                      <>
+                                        <button
+                                          onClick={() => {
+                                            const STATUS_ORDER = ["Pending", "Chauffeur Assigned", "En Route", "Passenger Boarded", "Completed"];
+                                            const currentIndex = STATUS_ORDER.indexOf(ride.status);
+                                            if (currentIndex !== -1 && currentIndex < STATUS_ORDER.length - 1) {
+                                              const nextStatus = STATUS_ORDER[currentIndex + 1];
+                                              const updated = activeRides.map(r => r.id === ride.id ? { ...r, status: nextStatus } : r);
+                                              setActiveRides(updated);
+                                              localStorage.setItem(ACTIVE_RIDES_KEY, JSON.stringify(updated));
+                                              toast.success(`Ride status set to ${nextStatus}`);
+                                              addErrorLog('info', 'Dispatch Action', `Ride ${ride.id} status advanced to ${nextStatus}.`);
+                                            }
+                                          }}
+                                          title="Advance to next status"
+                                          className="p-1 px-2 bg-lush-yellow/10 hover:bg-lush-yellow text-lush-yellow hover:text-black border border-lush-yellow/20 text-[9px] uppercase tracking-widest font-semibold rounded transition-all"
+                                        >
+                                          Advance
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const updated = activeRides.map(r => r.id === ride.id ? { ...r, status: "Cancelled" } : r);
+                                            setActiveRides(updated);
+                                            localStorage.setItem(ACTIVE_RIDES_KEY, JSON.stringify(updated));
+                                            toast.error(`Ride ${ride.id} cancelled`);
+                                            addErrorLog('warning', 'Dispatch Action', `Cancelled ride ${ride.id}.`);
+                                          }}
+                                          className="p-1 px-2 bg-red-950/20 hover:bg-red-900/30 text-red-300 border border-red-900/20 text-[9px] uppercase tracking-widest font-semibold rounded transition-all"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        const updated = activeRides.filter(r => r.id !== ride.id);
+                                        setActiveRides(updated);
+                                        localStorage.setItem(ACTIVE_RIDES_KEY, JSON.stringify(updated));
+                                        toast.info("Ride cleared from dispatch archive");
+                                      }}
+                                      title="Delete record"
+                                      className="p-1 bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 border border-white/5 hover:border-red-500/30 rounded transition-all"
+                                    >
+                                      <Trash2 size={10} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Leads & Inquiries */}
+              {activeTab === 'leads' && (
+                <div className="space-y-8 animate-fadeIn text-white">
+                  <div className="border-b border-white/5 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-display text-white uppercase tracking-widest mb-1">Leads & Inquiries Hub</h2>
+                      <p className="text-xs text-[#999] uppercase tracking-wider">Review premium client waitlist applications and direct concierge contact queries</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setLeadsSubTab('waitlist')}
+                        className={`px-4 py-2 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
+                          leadsSubTab === 'waitlist'
+                            ? 'bg-lush-yellow text-black border-lush-yellow'
+                            : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        Waitlist Queue ({waitlistLeads.length})
+                      </button>
+                      <button
+                        onClick={() => setLeadsSubTab('contact')}
+                        className={`px-4 py-2 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
+                          leadsSubTab === 'contact'
+                            ? 'bg-lush-yellow text-black border-lush-yellow'
+                            : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        Contact Inbox ({contactLeads.length})
+                      </button>
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem(LEADS_WAITLIST_KEY);
+                          localStorage.removeItem(LEADS_CONTACT_KEY);
+                          loadLeadsAndRides();
+                          toast.success("Leads roster reseeded with rich test-ready customer logs.");
+                          addErrorLog('info', 'Leads Reseeded', "Leads and contact inbox databases reloaded to default state.");
+                        }}
+                        title="Reseed demo data"
+                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-colors text-white/70 hover:text-white"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {leadsSubTab === 'waitlist' ? (
+                    <div className="bg-charcoal/10 border border-white/5 rounded-xl overflow-hidden">
+                      <div className="p-5 border-b border-white/5 bg-charcoal/20 flex justify-between items-center">
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Lagos Executive Waitlist Pool</h3>
+                        <span className="text-[10px] bg-white/10 text-[#aaa] font-mono px-2 py-0.5 rounded">Exclusive private beta</span>
+                      </div>
+
+                      {waitlistLeads.length === 0 ? (
+                        <div className="p-12 text-center text-white/40">
+                          <Users size={32} className="text-white/20 mx-auto mb-3" />
+                          <p className="text-xs uppercase tracking-widest mb-1 font-semibold">Queue is Empty</p>
+                          <p className="text-[11px] text-white/30 max-w-sm mx-auto">
+                            No active waitlist requests yet. You can sign up via the front-end Waitlist section or reseed to test.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-white/5 text-[9px] uppercase tracking-widest text-[#777] bg-black/30">
+                                <th className="py-3 px-4">Contact Person</th>
+                                <th className="py-3 px-4">Email Address</th>
+                                <th className="py-3 px-4">Applied Time</th>
+                                <th className="py-3 px-4">Access Code Status</th>
+                                <th className="py-3 px-4 text-right">Operations</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-xs">
+                              {waitlistLeads.map((lead, idx) => (
+                                <tr key={idx} className="hover:bg-white/5 transition-colors">
+                                  <td className="py-4 px-4 font-semibold text-white">{lead.name}</td>
+                                  <td className="py-4 px-4 font-mono text-[11px] text-[#ccc]">{lead.email}</td>
+                                  <td className="py-4 px-4 text-[#888]">
+                                    {new Date(lead.time).toLocaleString()}
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
+                                      lead.status === 'Accepted'
+                                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                        : lead.status === 'Invited'
+                                        ? 'bg-lush-yellow/10 text-lush-yellow border border-lush-yellow/20'
+                                        : 'bg-white/5 text-white/50 border border-white/10'
+                                    }`}>
+                                      {lead.status || "Pending Invite"}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-right space-x-2">
+                                    {(!lead.status || lead.status === 'Pending Invite') && (
+                                      <button
+                                        onClick={() => {
+                                          const updated = waitlistLeads.map((l, i) => i === idx ? { ...l, status: "Invited" } : l);
+                                          setWaitlistLeads(updated);
+                                          localStorage.setItem(LEADS_WAITLIST_KEY, JSON.stringify(updated));
+                                          toast.success(`Access code invite dispatched to ${lead.name}!`, {
+                                            description: `An official VIP welcome package and bypass token has been queued for ${lead.email}`
+                                          });
+                                          addErrorLog('info', 'Waitlist Invite', `Granted access invite to ${lead.name} (${lead.email}).`);
+                                        }}
+                                        className="px-2 py-1 bg-lush-yellow/10 hover:bg-lush-yellow text-lush-yellow hover:text-black border border-lush-yellow/20 text-[10px] uppercase tracking-widest font-semibold rounded transition-colors"
+                                      >
+                                        Send Invite
+                                      </button>
+                                    )}
+                                    {lead.status === 'Invited' && (
+                                      <button
+                                        onClick={() => {
+                                          const updated = waitlistLeads.map((l, i) => i === idx ? { ...l, status: "Accepted" } : l);
+                                          setWaitlistLeads(updated);
+                                          localStorage.setItem(LEADS_WAITLIST_KEY, JSON.stringify(updated));
+                                          toast.success(`${lead.name} has accepted! Account verified.`);
+                                          addErrorLog('info', 'Waitlist Accept', `Waitlist seat finalized for ${lead.name}.`);
+                                        }}
+                                        className="px-2 py-1 bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-black border border-green-500/20 text-[10px] uppercase tracking-widest font-semibold rounded transition-colors"
+                                      >
+                                        Finalize seat
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        const updated = waitlistLeads.filter((_, i) => i !== idx);
+                                        setWaitlistLeads(updated);
+                                        localStorage.setItem(LEADS_WAITLIST_KEY, JSON.stringify(updated));
+                                        toast.info("Waitlist lead removed.");
+                                      }}
+                                      className="p-1 bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 border border-white/5 hover:border-red-500/30 rounded transition-all inline-flex items-center"
+                                    >
+                                      <Trash2 size={11} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {contactLeads.length === 0 ? (
+                        <div className="bg-charcoal/10 border border-white/5 rounded-xl p-12 text-center text-white/40">
+                          <Inbox size={32} className="text-white/20 mx-auto mb-3" />
+                          <p className="text-xs uppercase tracking-widest mb-1 font-semibold">Inbox is Empty</p>
+                          <p className="text-[11px] text-white/30">No concierge inquiries or general contact messages have been received.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {contactLeads.map((lead, idx) => (
+                            <div key={idx} className="bg-charcoal/20 border border-white/10 rounded-xl p-6 space-y-4 relative overflow-hidden transition-all hover:border-white/20">
+                              <div className="flex justify-between items-start border-b border-white/5 pb-3">
+                                <div>
+                                  <h4 className="font-semibold text-white text-sm">{lead.name}</h4>
+                                  <p className="text-[10px] text-white/40 font-mono mt-0.5">{lead.email}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
+                                    lead.status === 'Replied'
+                                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                      : 'bg-lush-yellow/10 text-lush-yellow border border-lush-yellow/20'
+                                  }`}>
+                                    {lead.status || "New"}
+                                  </span>
+                                  <span className="text-[9px] text-white/30 font-mono">
+                                    {new Date(lead.time).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] uppercase tracking-widest text-[#aaa] font-bold block">{lead.subject}</span>
+                                <div className="p-3 bg-black/40 rounded border border-white/5 text-xs text-[#ddd] leading-relaxed font-light italic">
+                                  "{lead.message}"
+                                </div>
+                              </div>
+
+                              <div className="flex justify-end gap-2 pt-2 border-t border-white/5">
+                                {lead.status !== 'Replied' && (
+                                  <button
+                                    onClick={() => {
+                                      const updated = contactLeads.map((l, i) => i === idx ? { ...l, status: "Replied" } : l);
+                                      setContactLeads(updated);
+                                      localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(updated));
+                                      toast.success(`Marked inquiry from ${lead.name} as Replied!`);
+                                      addErrorLog('info', 'Inquiry Replied', `Resolved and replied to concierge inquiry from ${lead.name}.`);
+                                    }}
+                                    className="px-2.5 py-1.5 bg-lush-yellow hover:bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded transition-all"
+                                  >
+                                    Mark Replied
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    const updated = contactLeads.filter((_, i) => i !== idx);
+                                    setContactLeads(updated);
+                                    localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(updated));
+                                    toast.info("Inquiry cleared from inbox.");
+                                  }}
+                                  className="p-1.5 bg-white/5 hover:bg-red-500/20 border border-white/5 hover:border-red-500/30 text-white/40 hover:text-red-300 rounded transition-all"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

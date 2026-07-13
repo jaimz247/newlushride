@@ -30,6 +30,11 @@ export default function Contact() {
       return;
     }
 
+    const nameVal = (form.elements.namedItem('name') as HTMLInputElement).value;
+    const emailVal = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const subjectVal = (form.elements.namedItem('subject') as HTMLInputElement).value;
+    const messageVal = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
+
     setErrors({});
     setIsSubmitting(true);
     setTimeout(() => {
@@ -43,6 +48,21 @@ export default function Contact() {
           borderColor: 'rgba(255,255,255,0.1)'
         }
       });
+
+      // Save to localStorage for administration
+      try {
+        const currentList = JSON.parse(localStorage.getItem('lush_contact_submissions') || '[]');
+        currentList.push({
+          name: nameVal,
+          email: emailVal,
+          subject: subjectVal,
+          message: messageVal,
+          time: new Date().toISOString()
+        });
+        localStorage.setItem('lush_contact_submissions', JSON.stringify(currentList));
+      } catch (err) {
+        console.error("Failed to persist lead local submit", err);
+      }
       
       form.reset();
       setTimeout(() => setSuccess(false), 3000);
