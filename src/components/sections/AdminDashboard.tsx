@@ -4,7 +4,8 @@ import {
   Lock, CheckCircle2, AlertCircle, Plus, Trash2, Save, 
   HelpCircle, Phone, Info, Car, FileText, LogOut, RefreshCw, Eye, Sparkles, AlertTriangle, Terminal,
   Activity, Gauge, Zap, TrendingUp, Laptop, MousePointer,
-  Inbox, Navigation, Users, Check, X, Clock, Send
+  Inbox, Navigation, Users, Check, X, Clock, Send,
+  Sun, Moon, Download, Globe, MessageSquare, Briefcase, Share2, Award
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteConfig } from '../../types';
@@ -492,6 +493,54 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
     chauffeur: 'Tunde Lambo'
   });
 
+  const [adminTheme, setAdminTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('lush_admin_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  const toggleAdminTheme = () => {
+    const nextTheme = adminTheme === 'dark' ? 'light' : 'dark';
+    setAdminTheme(nextTheme);
+    localStorage.setItem('lush_admin_theme', nextTheme);
+    toast.success(`Theme switched to ${nextTheme === 'dark' ? 'Obsidian Dark' : 'Alabaster Light'} mode!`);
+  };
+
+  const exportToCSV = (data: any[], fileName: string) => {
+    if (!data || data.length === 0) {
+      toast.error("No data available to export.");
+      return;
+    }
+    try {
+      const headers = Object.keys(data[0]);
+      const csvRows = [
+        headers.join(','),
+        ...data.map(row => 
+          headers.map(fieldName => {
+            const val = row[fieldName];
+            const stringVal = val === null || val === undefined ? '' : String(val);
+            const escaped = stringVal.replace(/"/g, '""');
+            if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')) {
+              return `"${escaped}"`;
+            }
+            return escaped;
+          }).join(',')
+        )
+      ];
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `${fileName}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success(`Successfully exported ${data.length} records to ${fileName}.csv!`);
+    } catch (error) {
+      console.error("CSV Export Failed:", error);
+      toast.error("Failed to generate CSV export file.");
+    }
+  };
+
   const loadLeadsAndRides = () => {
     try {
       const waitlist = localStorage.getItem(LEADS_WAITLIST_KEY);
@@ -807,7 +856,7 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
     });
   };
 
-  const updateContact = (key: 'phone' | 'email' | 'address' | 'whatsapp', val: string) => {
+  const updateContact = (key: string, val: string) => {
     if (!config) return;
     setConfig({
       ...config,
@@ -950,14 +999,20 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080808] text-white flex flex-col font-sans overflow-hidden">
+    <div className={`fixed inset-0 z-50 flex flex-col font-sans overflow-hidden transition-colors duration-300 ${
+      adminTheme === 'light' ? 'bg-[#f4f5f7] text-slate-800' : 'bg-[#080808] text-white'
+    }`}>
       {/* Header */}
-      <header className="shrink-0 bg-[#0c0c0c] border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
+      <header className={`shrink-0 px-6 py-4 flex items-center justify-between z-10 border-b transition-colors duration-300 ${
+        adminTheme === 'light' ? 'bg-white border-slate-200 text-slate-900 shadow-sm' : 'bg-[#0c0c0c] border-white/10 text-white'
+      }`}>
         <div className="flex items-center gap-4">
           <div className="px-3 py-1 bg-lush-yellow/10 border border-lush-yellow/30 text-lush-yellow text-[10px] uppercase tracking-widest font-semibold rounded">
             ADMIN CENTRAL
           </div>
-          <h1 className="text-lg font-display uppercase tracking-wider text-white hidden md:block">
+          <h1 className={`text-lg font-display uppercase tracking-wider hidden md:block ${
+            adminTheme === 'light' ? 'text-slate-900' : 'text-white'
+          }`}>
             Lush<span className="text-lush-yellow">Ride</span> CMS Engine
           </h1>
         </div>
@@ -972,10 +1027,28 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
             {isSaving ? "Saving..." : "Publish Changes"}
           </button>
 
+          {/* Light/Dark Mode Switcher */}
+          <button
+            onClick={toggleAdminTheme}
+            type="button"
+            title={adminTheme === 'dark' ? "Switch to Alabaster Light Mode" : "Switch to Obsidian Dark Mode"}
+            className={`p-2.5 rounded transition-all flex items-center justify-center border ${
+              adminTheme === 'light'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'
+                : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/80 hover:text-white'
+            }`}
+          >
+            {adminTheme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+
           <button
             onClick={handleLogout}
             title="Terminate session"
-            className="p-2.5 rounded border border-white/10 hover:bg-white/5 text-white/60 hover:text-white transition-all flex items-center justify-center"
+            className={`p-2.5 rounded border transition-all flex items-center justify-center ${
+              adminTheme === 'light'
+                ? 'border-slate-300 hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                : 'border-white/10 hover:bg-white/5 text-white/60 hover:text-white'
+            }`}
           >
             <LogOut size={16} />
           </button>
@@ -983,7 +1056,11 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
           {onClose && (
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-white/20 hover:border-white text-xs tracking-widest uppercase text-white/80 hover:text-white transition-all rounded"
+              className={`px-4 py-2 border text-xs tracking-widest uppercase transition-all rounded ${
+                adminTheme === 'light'
+                  ? 'border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900'
+                  : 'border-white/20 hover:border-white text-white/80 hover:text-white'
+              }`}
             >
               Close
             </button>
@@ -994,17 +1071,25 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
       {/* Main Container Split */}
       <div className="flex flex-1 overflow-hidden">
         {/* Navigation Rail */}
-        <aside className="w-16 md:w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col shrink-0">
-          <div className="p-4 hidden md:block select-none border-b border-white/5">
-            <p className="text-[10px] text-[#555] uppercase tracking-widest font-semibold">WORKSPACE SECTIONS</p>
+        <aside className={`w-16 md:w-64 flex flex-col shrink-0 border-r transition-colors duration-300 ${
+          adminTheme === 'light' ? 'bg-[#eceef2] border-slate-200' : 'bg-[#0a0a0a] border-white/10'
+        }`}>
+          <div className={`p-4 hidden md:block select-none border-b transition-colors duration-300 ${
+            adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+          }`}>
+            <p className={`text-[10px] uppercase tracking-widest font-semibold ${
+              adminTheme === 'light' ? 'text-slate-500' : 'text-[#555]'
+            }`}>WORKSPACE SECTIONS</p>
           </div>
           <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
             <button
               onClick={() => setActiveTab('hero')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'hero' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <FileText size={16} />
@@ -1015,8 +1100,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('fleet')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'fleet' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Car size={16} />
@@ -1027,8 +1114,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('faq')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'faq' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <HelpCircle size={16} />
@@ -1039,8 +1128,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('contact')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'contact' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Phone size={16} />
@@ -1051,8 +1142,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('dispatch')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'dispatch' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Navigation size={16} />
@@ -1063,8 +1156,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('leads')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'leads' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Users size={16} />
@@ -1075,8 +1170,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('logs')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'logs' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Terminal size={16} />
@@ -1087,8 +1184,10 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
               onClick={() => setActiveTab('performance')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
                 activeTab === 'performance' 
-                  ? 'bg-lush-yellow text-black font-semibold' 
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-lush-yellow text-black font-semibold shadow-sm' 
+                  : adminTheme === 'light'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
               <Activity size={16} />
@@ -1096,30 +1195,48 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
             </button>
           </nav>
 
-          <div className="p-4 border-t border-white/5 hidden md:block">
-            <div className="flex items-center gap-2 text-[10px] text-white/30 tracking-wider">
+          <div className={`p-4 border-t hidden md:block transition-colors duration-300 ${
+            adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+          }`}>
+            <div className={`flex items-center gap-2 text-[10px] tracking-wider ${
+              adminTheme === 'light' ? 'text-slate-400' : 'text-white/30'
+            }`}>
               <Sparkles size={10} className="text-lush-yellow" /> LIVE PRODUCTION SYNC
             </div>
           </div>
         </aside>
 
         {/* Editing Panels Workspace */}
-        <main className="flex-1 bg-[#050505] overflow-y-auto p-6 md:p-10">
-          {isLoading ? (
-            <div className="h-full flex flex-col items-center justify-center">
+        <main className={`flex-1 overflow-y-auto p-6 md:p-10 transition-colors duration-300 ${
+          adminTheme === 'light' ? 'bg-[#f8fafc] text-slate-800' : 'bg-[#050505] text-white'
+        }`}>
+           {isLoading ? (
+            <div className="h-full flex flex-col items-center justify-center min-h-[300px]">
               <RefreshCw className="text-lush-yellow animate-spin mb-4" size={32} />
-              <p className="text-xs uppercase tracking-widest text-white/40">Fetching Secure Configuration...</p>
+              <p className={`text-xs uppercase tracking-widest ${
+                adminTheme === 'light' ? 'text-slate-400' : 'text-white/40'
+              }`}>Fetching Secure Configuration...</p>
             </div>
           ) : !config ? (
-            <div className="h-full flex flex-col items-center justify-center p-6 text-center border border-dashed border-white/10 rounded-xl max-w-md mx-auto my-12">
+            <div className={`h-full flex flex-col items-center justify-center p-6 text-center border border-dashed rounded-xl max-w-md mx-auto my-12 min-h-[300px] ${
+              adminTheme === 'light' ? 'border-slate-300 bg-white' : 'border-white/10 bg-black/40'
+            }`}>
               <AlertTriangle className="text-red-500 mb-4 animate-bounce" size={40} />
-              <h2 className="text-lg font-display text-white uppercase tracking-widest mb-2">Boot Error</h2>
-              <p className="text-xs text-white/60 mb-6 leading-relaxed">
+              <h2 className={`text-lg font-display uppercase tracking-widest mb-2 ${
+                adminTheme === 'light' ? 'text-slate-800' : 'text-white'
+              }`}>Boot Error</h2>
+              <p className={`text-xs mb-6 leading-relaxed ${
+                adminTheme === 'light' ? 'text-slate-500' : 'text-white/60'
+              }`}>
                 Could not retrieve custom configuration from the database. Please reload or contact technical support.
               </p>
               <button 
                 onClick={fetchConfig}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-colors text-xs uppercase tracking-widest font-semibold rounded"
+                className={`flex items-center gap-2 px-4 py-2 border transition-colors text-xs uppercase tracking-widest font-semibold rounded ${
+                  adminTheme === 'light'
+                    ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'
+                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                }`}
               >
                 <RefreshCw size={12} /> Retry Gateway
               </button>
@@ -1449,51 +1566,229 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
 
               {/* Tab: Contact Routing */}
               {activeTab === 'contact' && (
-                <div className="space-y-8 animate-fadeIn">
-                  <div className="border-b border-white/5 pb-6">
-                    <h2 className="text-2xl font-display text-white uppercase tracking-widest mb-1">Contact Routing & Operations</h2>
-                    <p className="text-xs text-[#999] uppercase tracking-wider">Update telephone lines, emails, maps, and active dispatch targets</p>
+                <div className="space-y-10 animate-fadeIn">
+                  <div className={`border-b pb-6 transition-colors duration-300 ${
+                    adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+                  }`}>
+                    <h2 className={`text-2xl font-display uppercase tracking-widest mb-1 ${
+                      adminTheme === 'light' ? 'text-slate-900' : 'text-white'
+                    }`}>Contact & Brand Identity CMS</h2>
+                    <p className={`text-xs uppercase tracking-wider ${
+                      adminTheme === 'light' ? 'text-slate-500' : 'text-[#999]'
+                    }`}>Manage telephone lines, company socials, corporate licensing, and operational desk parameters</p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-charcoal/30 border border-white/5 p-6 rounded-xl">
-                    <div className="space-y-2">
-                      <label className="block text-[10px] uppercase tracking-widest text-[#aaa]">Direct Chauffeur Line (Display)</label>
-                      <input
-                        type="text"
-                        value={config.contact.phone}
-                        onChange={(e) => updateContact('phone', e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-lg py-3 px-4 text-white text-sm outline-none focus:border-lush-yellow transition-all"
-                      />
-                    </div>
+                  {/* Operational HQ and Dispatch Contacts */}
+                  <div className="space-y-4">
+                    <h3 className={`text-xs font-display uppercase tracking-widest flex items-center gap-2 ${
+                      adminTheme === 'light' ? 'text-slate-800' : 'text-lush-yellow'
+                    }`}>
+                      <Phone size={14} /> Operational Headquarters Contacts
+                    </h3>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-xl border transition-all duration-300 ${
+                      adminTheme === 'light' ? 'bg-slate-50 border-slate-200 shadow-sm' : 'bg-charcoal/30 border-white/5'
+                    }`}>
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Direct Chauffeur Line (Display)</label>
+                        <input
+                          type="text"
+                          value={config.contact.phone || ""}
+                          onChange={(e) => updateContact('phone', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-[10px] uppercase tracking-widest text-[#aaa]">Concierge WhatsApp Number</label>
-                      <input
-                        type="text"
-                        value={config.contact.whatsapp}
-                        onChange={(e) => updateContact('whatsapp', e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-lg py-3 px-4 text-white text-sm outline-none focus:border-lush-yellow transition-all"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Concierge WhatsApp Link / Number</label>
+                        <input
+                          type="text"
+                          value={config.contact.whatsapp || ""}
+                          onChange={(e) => updateContact('whatsapp', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-[10px] uppercase tracking-widest text-[#aaa]">Operational HQ Address</label>
-                      <input
-                        type="text"
-                        value={config.contact.address}
-                        onChange={(e) => updateContact('address', e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-lg py-3 px-4 text-white text-sm outline-none focus:border-lush-yellow transition-all"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Operational HQ Physical Address</label>
+                        <input
+                          type="text"
+                          value={config.contact.address || ""}
+                          onChange={(e) => updateContact('address', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-[10px] uppercase tracking-widest text-[#aaa]">Corporate Enquiries Email</label>
-                      <input
-                        type="email"
-                        value={config.contact.email}
-                        onChange={(e) => updateContact('email', e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-lg py-3 px-4 text-white text-sm outline-none focus:border-lush-yellow transition-all"
-                      />
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Corporate Enquiries Email</label>
+                        <input
+                          type="email"
+                          value={config.contact.email || ""}
+                          onChange={(e) => updateContact('email', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Brand Social Channels (As requested: Instagram and others) */}
+                  <div className="space-y-4">
+                    <h3 className={`text-xs font-display uppercase tracking-widest flex items-center gap-2 ${
+                      adminTheme === 'light' ? 'text-slate-800' : 'text-lush-yellow'
+                    }`}>
+                      <Share2 size={14} /> Brand Social Media Handles (Instagram & Digital)
+                    </h3>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-xl border transition-all duration-300 ${
+                      adminTheme === 'light' ? 'bg-slate-50 border-slate-200 shadow-sm' : 'bg-charcoal/30 border-white/5'
+                    }`}>
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Company Instagram URL</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="https://instagram.com/lushrideng"
+                            value={config.contact.instagram || ""}
+                            onChange={(e) => updateContact('instagram', e.target.value)}
+                            className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all pl-10 ${
+                              adminTheme === 'light' 
+                                ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                                : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                            }`}
+                          />
+                          <span className="absolute left-3.5 top-3.5 text-white/40">📸</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Company Twitter / X URL</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="https://twitter.com/lushride"
+                            value={config.contact.twitter || ""}
+                            onChange={(e) => updateContact('twitter', e.target.value)}
+                            className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all pl-10 ${
+                              adminTheme === 'light' 
+                                ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                                : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                            }`}
+                          />
+                          <span className="absolute left-3.5 top-3.5 text-white/40">𝕏</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Company LinkedIn Corporate Page</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="https://linkedin.com/company/lushride"
+                            value={config.contact.linkedin || ""}
+                            onChange={(e) => updateContact('linkedin', e.target.value)}
+                            className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all pl-10 ${
+                              adminTheme === 'light' 
+                                ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                                : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                            }`}
+                          />
+                          <span className="absolute left-3.5 top-3.5 text-white/40">💼</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Company Facebook Page</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="https://facebook.com/lushride"
+                            value={config.contact.facebook || ""}
+                            onChange={(e) => updateContact('facebook', e.target.value)}
+                            className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all pl-10 ${
+                              adminTheme === 'light' 
+                                ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                                : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                            }`}
+                          />
+                          <span className="absolute left-3.5 top-3.5 text-white/40">📘</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Corporate and Regulatory Metadata (Lagos state license, working hours, etc) */}
+                  <div className="space-y-4">
+                    <h3 className={`text-xs font-display uppercase tracking-widest flex items-center gap-2 ${
+                      adminTheme === 'light' ? 'text-slate-800' : 'text-lush-yellow'
+                    }`}>
+                      <Award size={14} /> Corporate & Compliance Licensing
+                    </h3>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-xl border transition-all duration-300 ${
+                      adminTheme === 'light' ? 'bg-slate-50 border-slate-200 shadow-sm' : 'bg-charcoal/30 border-white/5'
+                    }`}>
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Corporate Registration / CAC License No.</label>
+                        <input
+                          type="text"
+                          placeholder="RC-1928472 / Lagos Executive Transport Licensing Board"
+                          value={config.contact.registration || ""}
+                          onChange={(e) => updateContact('registration', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className={`block text-[10px] uppercase tracking-widest ${
+                          adminTheme === 'light' ? 'text-slate-600 font-semibold' : 'text-[#aaa]'
+                        }`}>Operational Hours & Concierge Availability</label>
+                        <input
+                          type="text"
+                          placeholder="24/7/365 White-Glove Dispatch"
+                          value={config.contact.hours || ""}
+                          onChange={(e) => updateContact('hours', e.target.value)}
+                          className={`w-full rounded-lg py-3 px-4 text-sm outline-none transition-all ${
+                            adminTheme === 'light' 
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:border-lush-yellow shadow-sm' 
+                              : 'bg-black/60 border border-white/10 text-white focus:border-lush-yellow'
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1791,29 +2086,39 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
 
               {/* Tab: Leads & Inquiries */}
               {activeTab === 'leads' && (
-                <div className="space-y-8 animate-fadeIn text-white">
-                  <div className="border-b border-white/5 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-8 animate-fadeIn">
+                  <div className={`border-b pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-300 ${
+                    adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+                  }`}>
                     <div>
-                      <h2 className="text-2xl font-display text-white uppercase tracking-widest mb-1">Leads & Inquiries Hub</h2>
-                      <p className="text-xs text-[#999] uppercase tracking-wider">Review premium client waitlist applications and direct concierge contact queries</p>
+                      <h2 className={`text-2xl font-display uppercase tracking-widest mb-1 ${
+                        adminTheme === 'light' ? 'text-slate-900' : 'text-white'
+                      }`}>Leads & Inquiries Hub</h2>
+                      <p className={`text-xs uppercase tracking-wider ${
+                        adminTheme === 'light' ? 'text-slate-500' : 'text-[#999]'
+                      }`}>Review premium client waitlist applications and direct concierge contact queries</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => setLeadsSubTab('waitlist')}
-                        className={`px-4 py-2 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
+                        className={`px-4 py-2.5 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
                           leadsSubTab === 'waitlist'
-                            ? 'bg-lush-yellow text-black border-lush-yellow'
-                            : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                            ? 'bg-lush-yellow text-black border-lush-yellow shadow-sm'
+                            : adminTheme === 'light'
+                              ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+                              : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                         }`}
                       >
                         Waitlist Queue ({waitlistLeads.length})
                       </button>
                       <button
                         onClick={() => setLeadsSubTab('contact')}
-                        className={`px-4 py-2 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
+                        className={`px-4 py-2.5 text-[11px] uppercase tracking-widest font-semibold rounded border transition-colors ${
                           leadsSubTab === 'contact'
-                            ? 'bg-lush-yellow text-black border-lush-yellow'
-                            : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                            ? 'bg-lush-yellow text-black border-lush-yellow shadow-sm'
+                            : adminTheme === 'light'
+                              ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+                              : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                         }`}
                       >
                         Contact Inbox ({contactLeads.length})
@@ -1827,7 +2132,11 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                           addErrorLog('info', 'Leads Reseeded', "Leads and contact inbox databases reloaded to default state.");
                         }}
                         title="Reseed demo data"
-                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-colors text-white/70 hover:text-white"
+                        className={`p-2.5 border rounded transition-colors ${
+                          adminTheme === 'light'
+                            ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+                        }`}
                       >
                         <RefreshCw size={14} />
                       </button>
@@ -1835,17 +2144,38 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                   </div>
 
                   {leadsSubTab === 'waitlist' ? (
-                    <div className="bg-charcoal/10 border border-white/5 rounded-xl overflow-hidden">
-                      <div className="p-5 border-b border-white/5 bg-charcoal/20 flex justify-between items-center">
-                        <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Lagos Executive Waitlist Pool</h3>
-                        <span className="text-[10px] bg-white/10 text-[#aaa] font-mono px-2 py-0.5 rounded">Exclusive private beta</span>
+                    <div className={`border rounded-xl overflow-hidden transition-colors duration-300 ${
+                      adminTheme === 'light' ? 'bg-white border-slate-200 shadow-sm' : 'bg-charcoal/10 border-white/5'
+                    }`}>
+                      <div className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-300 ${
+                        adminTheme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-charcoal/20 border-white/5'
+                      }`}>
+                        <div>
+                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${
+                            adminTheme === 'light' ? 'text-slate-800' : 'text-white'
+                          }`}>Lagos Executive Waitlist Pool</h3>
+                          <p className={`text-[10px] uppercase tracking-wider ${
+                            adminTheme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                          }`}>Pre-vetted private beta subscribers</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => exportToCSV(waitlistLeads, 'lush_waitlist_leads')}
+                            className="px-3 py-1.5 bg-lush-yellow hover:bg-white border border-lush-yellow hover:border-slate-300 text-black text-[10px] font-bold uppercase tracking-widest rounded shadow-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Download size={12} /> Export waitlist (CSV)
+                          </button>
+                          <span className={`text-[10px] font-mono px-2.5 py-1 rounded font-semibold ${
+                            adminTheme === 'light' ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-[#aaa]'
+                          }`}>EXCLUSIVE PRIVATE BETA</span>
+                        </div>
                       </div>
 
                       {waitlistLeads.length === 0 ? (
-                        <div className="p-12 text-center text-white/40">
-                          <Users size={32} className="text-white/20 mx-auto mb-3" />
-                          <p className="text-xs uppercase tracking-widest mb-1 font-semibold">Queue is Empty</p>
-                          <p className="text-[11px] text-white/30 max-w-sm mx-auto">
+                        <div className="p-16 text-center">
+                          <Users size={36} className={`mx-auto mb-4 ${adminTheme === 'light' ? 'text-slate-300' : 'text-white/20'}`} />
+                          <p className={`text-xs uppercase tracking-widest mb-1 font-semibold ${adminTheme === 'light' ? 'text-slate-800' : 'text-white'}`}>Queue is Empty</p>
+                          <p className={`text-[11px] max-w-sm mx-auto ${adminTheme === 'light' ? 'text-slate-500' : 'text-white/30'}`}>
                             No active waitlist requests yet. You can sign up via the front-end Waitlist section or reseed to test.
                           </p>
                         </div>
@@ -1853,34 +2183,46 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-white/5 text-[9px] uppercase tracking-widest text-[#777] bg-black/30">
-                                <th className="py-3 px-4">Contact Person</th>
-                                <th className="py-3 px-4">Email Address</th>
-                                <th className="py-3 px-4">Applied Time</th>
-                                <th className="py-3 px-4">Access Code Status</th>
-                                <th className="py-3 px-4 text-right">Operations</th>
+                              <tr className={`border-b text-[9px] uppercase tracking-widest transition-colors duration-300 ${
+                                adminTheme === 'light' ? 'border-slate-200 text-slate-500 bg-slate-50' : 'border-white/5 text-[#777] bg-black/30'
+                              }`}>
+                                <th className="py-3 px-6">Contact Person</th>
+                                <th className="py-3 px-6">Email Address</th>
+                                <th className="py-3 px-6">Applied Time</th>
+                                <th className="py-3 px-6">Access Code Status</th>
+                                <th className="py-3 px-6 text-right">Operations</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5 text-xs">
+                            <tbody className={`divide-y text-xs transition-colors duration-300 ${
+                              adminTheme === 'light' ? 'divide-slate-200' : 'divide-white/5'
+                            }`}>
                               {waitlistLeads.map((lead, idx) => (
-                                <tr key={idx} className="hover:bg-white/5 transition-colors">
-                                  <td className="py-4 px-4 font-semibold text-white">{lead.name}</td>
-                                  <td className="py-4 px-4 font-mono text-[11px] text-[#ccc]">{lead.email}</td>
-                                  <td className="py-4 px-4 text-[#888]">
+                                <tr key={idx} className={`transition-colors ${
+                                  adminTheme === 'light' ? 'hover:bg-slate-50 text-slate-800' : 'hover:bg-white/5 text-white'
+                                }`}>
+                                  <td className="py-4.5 px-6 font-semibold">{lead.name}</td>
+                                  <td className={`py-4.5 px-6 font-mono text-[11px] ${
+                                    adminTheme === 'light' ? 'text-slate-600' : 'text-[#ccc]'
+                                  }`}>{lead.email}</td>
+                                  <td className={`py-4.5 px-6 ${
+                                    adminTheme === 'light' ? 'text-slate-500' : 'text-[#888]'
+                                  }`}>
                                     {new Date(lead.time).toLocaleString()}
                                   </td>
-                                  <td className="py-4 px-4">
+                                  <td className="py-4.5 px-6">
                                     <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
                                       lead.status === 'Accepted'
-                                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                        ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20'
                                         : lead.status === 'Invited'
-                                        ? 'bg-lush-yellow/10 text-lush-yellow border border-lush-yellow/20'
-                                        : 'bg-white/5 text-white/50 border border-white/10'
+                                        ? 'bg-lush-yellow/10 text-[#dca000] dark:text-lush-yellow border border-lush-yellow/20'
+                                        : adminTheme === 'light' 
+                                          ? 'bg-slate-100 text-slate-500 border border-slate-200' 
+                                          : 'bg-white/5 text-white/50 border border-white/10'
                                     }`}>
                                       {lead.status || "Pending Invite"}
                                     </span>
                                   </td>
-                                  <td className="py-4 px-4 text-right space-x-2">
+                                  <td className="py-4.5 px-6 text-right space-x-2">
                                     {(!lead.status || lead.status === 'Pending Invite') && (
                                       <button
                                         onClick={() => {
@@ -1892,7 +2234,7 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                                           });
                                           addErrorLog('info', 'Waitlist Invite', `Granted access invite to ${lead.name} (${lead.email}).`);
                                         }}
-                                        className="px-2 py-1 bg-lush-yellow/10 hover:bg-lush-yellow text-lush-yellow hover:text-black border border-lush-yellow/20 text-[10px] uppercase tracking-widest font-semibold rounded transition-colors"
+                                        className="px-2.5 py-1 bg-lush-yellow hover:bg-white text-black border border-lush-yellow/30 text-[10px] uppercase tracking-widest font-semibold rounded shadow-sm transition-all"
                                       >
                                         Send Invite
                                       </button>
@@ -1906,7 +2248,7 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                                           toast.success(`${lead.name} has accepted! Account verified.`);
                                           addErrorLog('info', 'Waitlist Accept', `Waitlist seat finalized for ${lead.name}.`);
                                         }}
-                                        className="px-2 py-1 bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-black border border-green-500/20 text-[10px] uppercase tracking-widest font-semibold rounded transition-colors"
+                                        className="px-2.5 py-1 bg-green-500 text-white hover:bg-green-600 text-[10px] uppercase tracking-widest font-semibold rounded shadow-sm transition-colors"
                                       >
                                         Finalize seat
                                       </button>
@@ -1918,7 +2260,11 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                                         localStorage.setItem(LEADS_WAITLIST_KEY, JSON.stringify(updated));
                                         toast.info("Waitlist lead removed.");
                                       }}
-                                      className="p-1 bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 border border-white/5 hover:border-red-500/30 rounded transition-all inline-flex items-center"
+                                      className={`p-1.5 rounded border transition-all inline-flex items-center ${
+                                        adminTheme === 'light'
+                                          ? 'bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 border-slate-200 hover:border-red-200'
+                                          : 'bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 border-white/5 hover:border-red-500/30'
+                                      }`}
                                     >
                                       <Trash2 size={11} />
                                     </button>
@@ -1932,73 +2278,114 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {contactLeads.length === 0 ? (
-                        <div className="bg-charcoal/10 border border-white/5 rounded-xl p-12 text-center text-white/40">
-                          <Inbox size={32} className="text-white/20 mx-auto mb-3" />
-                          <p className="text-xs uppercase tracking-widest mb-1 font-semibold">Inbox is Empty</p>
-                          <p className="text-[11px] text-white/30">No concierge inquiries or general contact messages have been received.</p>
+                      <div className={`border rounded-xl overflow-hidden transition-colors duration-300 ${
+                        adminTheme === 'light' ? 'bg-white border-slate-200 shadow-sm' : 'bg-charcoal/10 border-white/5'
+                      }`}>
+                        <div className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-300 ${
+                          adminTheme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-charcoal/20 border-white/5'
+                        }`}>
+                          <div>
+                            <h3 className={`text-sm font-semibold uppercase tracking-wider ${
+                              adminTheme === 'light' ? 'text-slate-800' : 'text-white'
+                            }`}>Concierge Inquiry Inbox</h3>
+                            <p className={`text-[10px] uppercase tracking-wider ${
+                              adminTheme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                            }`}>General queries and customized transfer plans</p>
+                          </div>
+                          <button
+                            onClick={() => exportToCSV(contactLeads, 'lush_concierge_submissions')}
+                            className="px-3 py-1.5 bg-lush-yellow hover:bg-white border border-lush-yellow hover:border-slate-300 text-black text-[10px] font-bold uppercase tracking-widest rounded shadow-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Download size={12} /> Export inbox (CSV)
+                          </button>
                         </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {contactLeads.map((lead, idx) => (
-                            <div key={idx} className="bg-charcoal/20 border border-white/10 rounded-xl p-6 space-y-4 relative overflow-hidden transition-all hover:border-white/20">
-                              <div className="flex justify-between items-start border-b border-white/5 pb-3">
-                                <div>
-                                  <h4 className="font-semibold text-white text-sm">{lead.name}</h4>
-                                  <p className="text-[10px] text-white/40 font-mono mt-0.5">{lead.email}</p>
+
+                        {contactLeads.length === 0 ? (
+                          <div className="p-16 text-center">
+                            <Inbox size={36} className={`mx-auto mb-4 ${adminTheme === 'light' ? 'text-slate-300' : 'text-white/20'}`} />
+                            <p className={`text-xs uppercase tracking-widest mb-1 font-semibold ${adminTheme === 'light' ? 'text-slate-800' : 'text-white'}`}>Inbox is Empty</p>
+                            <p className={`text-[11px] max-w-sm mx-auto ${adminTheme === 'light' ? 'text-slate-500' : 'text-white/30'}`}>No concierge inquiries or general contact messages have been received.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                            {contactLeads.map((lead, idx) => (
+                              <div key={idx} className={`border rounded-xl p-6 space-y-4 relative overflow-hidden transition-all ${
+                                adminTheme === 'light' 
+                                  ? 'bg-slate-50 border-slate-200 hover:border-slate-300 shadow-sm' 
+                                  : 'bg-charcoal/20 border-white/10 hover:border-white/20'
+                              }`}>
+                                <div className={`flex justify-between items-start border-b pb-3 ${
+                                  adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+                                }`}>
+                                  <div>
+                                    <h4 className={`font-semibold text-sm ${adminTheme === 'light' ? 'text-slate-800' : 'text-white'}`}>{lead.name}</h4>
+                                    <p className={`text-[10px] font-mono mt-0.5 ${adminTheme === 'light' ? 'text-slate-500' : 'text-white/40'}`}>{lead.email}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
+                                      lead.status === 'Replied'
+                                        ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20'
+                                        : 'bg-lush-yellow/10 text-[#dca000] dark:text-lush-yellow border border-lush-yellow/20'
+                                    }`}>
+                                      {lead.status || "New"}
+                                    </span>
+                                    <span className={`text-[9px] font-mono ${adminTheme === 'light' ? 'text-slate-400' : 'text-white/30'}`}>
+                                      {new Date(lead.time).toLocaleDateString()}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase ${
-                                    lead.status === 'Replied'
-                                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                      : 'bg-lush-yellow/10 text-lush-yellow border border-lush-yellow/20'
+
+                                <div className="space-y-1.5">
+                                  <span className={`text-[10px] uppercase tracking-widest font-bold block ${
+                                    adminTheme === 'light' ? 'text-slate-600' : 'text-[#aaa]'
+                                  }`}>{lead.subject}</span>
+                                  <div className={`p-3 rounded border text-xs leading-relaxed font-light italic ${
+                                    adminTheme === 'light' 
+                                      ? 'bg-white border-slate-200 text-slate-700' 
+                                      : 'bg-black/40 border-white/5 text-[#ddd]'
                                   }`}>
-                                    {lead.status || "New"}
-                                  </span>
-                                  <span className="text-[9px] text-white/30 font-mono">
-                                    {new Date(lead.time).toLocaleDateString()}
-                                  </span>
+                                    "{lead.message}"
+                                  </div>
                                 </div>
-                              </div>
 
-                              <div className="space-y-1.5">
-                                <span className="text-[10px] uppercase tracking-widest text-[#aaa] font-bold block">{lead.subject}</span>
-                                <div className="p-3 bg-black/40 rounded border border-white/5 text-xs text-[#ddd] leading-relaxed font-light italic">
-                                  "{lead.message}"
-                                </div>
-                              </div>
-
-                              <div className="flex justify-end gap-2 pt-2 border-t border-white/5">
-                                {lead.status !== 'Replied' && (
+                                <div className={`flex justify-end gap-2 pt-2 border-t ${
+                                  adminTheme === 'light' ? 'border-slate-200' : 'border-white/5'
+                                }`}>
+                                  {lead.status !== 'Replied' && (
+                                    <button
+                                      onClick={() => {
+                                        const updated = contactLeads.map((l, i) => i === idx ? { ...l, status: "Replied" } : l);
+                                        setContactLeads(updated);
+                                        localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(updated));
+                                        toast.success(`Marked inquiry from ${lead.name} as Replied!`);
+                                        addErrorLog('info', 'Inquiry Replied', `Resolved and replied to concierge inquiry from ${lead.name}.`);
+                                      }}
+                                      className="px-3 py-1.5 bg-lush-yellow hover:bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded shadow-sm transition-all"
+                                    >
+                                      Mark Replied
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => {
-                                      const updated = contactLeads.map((l, i) => i === idx ? { ...l, status: "Replied" } : l);
+                                      const updated = contactLeads.filter((_, i) => i !== idx);
                                       setContactLeads(updated);
                                       localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(updated));
-                                      toast.success(`Marked inquiry from ${lead.name} as Replied!`);
-                                      addErrorLog('info', 'Inquiry Replied', `Resolved and replied to concierge inquiry from ${lead.name}.`);
+                                      toast.info("Inquiry cleared from inbox.");
                                     }}
-                                    className="px-2.5 py-1.5 bg-lush-yellow hover:bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded transition-all"
+                                    className={`p-1.5 rounded border transition-all ${
+                                      adminTheme === 'light'
+                                        ? 'bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 border-slate-200 hover:border-red-200'
+                                        : 'bg-white/5 hover:bg-red-500/20 border-white/5 hover:border-red-500/30 text-white/40 hover:text-red-300'
+                                    }`}
                                   >
-                                    Mark Replied
+                                    <Trash2 size={12} />
                                   </button>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    const updated = contactLeads.filter((_, i) => i !== idx);
-                                    setContactLeads(updated);
-                                    localStorage.setItem(LEADS_CONTACT_KEY, JSON.stringify(updated));
-                                    toast.info("Inquiry cleared from inbox.");
-                                  }}
-                                  className="p-1.5 bg-white/5 hover:bg-red-500/20 border border-white/5 hover:border-red-500/30 text-white/40 hover:text-red-300 rounded transition-all"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

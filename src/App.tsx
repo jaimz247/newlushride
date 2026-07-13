@@ -7,6 +7,7 @@ import ScrollProgress from './components/ui/ScrollProgress';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import { Toaster } from 'sonner';
 import { Helmet } from 'react-helmet-async';
+import SEOHead from './components/ui/SEOHead';
 
 const Hero = lazy(() => import('./components/sections/Hero'));
 const Experience = lazy(() => import('./components/sections/Experience'));
@@ -169,11 +170,7 @@ export default function App() {
   }
   return (
     <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto md:cursor-none transition-colors duration-500">
-      <Helmet>
-        <title>LushRide | Executive Chauffeur Service in Lagos</title>
-        <meta name="description" content="Lagos' finest premium chauffeur service. Absolute comfort, uncompromising privacy, and precision scheduling for the elite." />
-        <link rel="canonical" href="https://lushride.com/" />
-      </Helmet>
+      <SEOHead />
       <ScrollProgress />
       <CustomCursor />
       <Toaster position="bottom-center" />

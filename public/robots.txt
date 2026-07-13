@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin
 
-Sitemap: https://lushride.com/sitemap.xml
+Sitemap: https://lushride.ng/sitemap.xml

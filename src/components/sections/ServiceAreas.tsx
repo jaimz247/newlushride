@@ -69,6 +69,30 @@ export default function ServiceAreas() {
     }
   };
 
+  useEffect(() => {
+    const handleOpenServiceArea = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (!customEvent.detail || !customEvent.detail.name) return;
+      const found = locations.find(l => 
+        l.name.toLowerCase().includes(customEvent.detail.name.toLowerCase()) || 
+        l.id.toLowerCase() === customEvent.detail.name.toLowerCase()
+      );
+      if (found) {
+        setSelectedLocation(found);
+        setZoomScale(1.5);
+        setInteractionOrigin({ x: found.x, y: found.y });
+        
+        // Scroll to the coverage section
+        const element = document.getElementById('coverage');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+    window.addEventListener('open-service-area', handleOpenServiceArea);
+    return () => window.removeEventListener('open-service-area', handleOpenServiceArea);
+  }, []);
+
   // Determine roughly from city center (assume x: 50, y: 50)
   const calculateDistance = (loc: typeof locations[0]) => {
     const dist = Math.sqrt(Math.pow(loc.x - 50, 2) + Math.pow(loc.y - 50, 2));
@@ -78,7 +102,7 @@ export default function ServiceAreas() {
   };
 
   return (
-    <section className="py-32 bg-theme transition-colors duration-500 overflow-hidden relative">
+    <section id="coverage" className="py-32 bg-theme transition-colors duration-500 overflow-hidden relative">
       <Helmet>
         <title>ServiceAreas | LushRide</title>
         <meta name="description" content="Explore the ServiceAreas section of LushRide's premium chauffeur services." />

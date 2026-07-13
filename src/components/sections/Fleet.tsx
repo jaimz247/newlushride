@@ -12,7 +12,7 @@ const fleet = [
     images: [
       'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&w=1200&q=80',
-      '/interior.jpg'
+      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80'
     ],
     specs: {
       engine: '3.5L V6 dual VVT-i',
@@ -42,7 +42,7 @@ const fleet = [
       'https://images.unsplash.com/photo-1608508491873-a80974b8826d?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1626847037657-fd3622613ce3?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80',
-      '/Range interior.jpg'
+      'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?auto=format&fit=crop&w=1200&q=80'
     ],
     specs: {
       engine: '3.0L Supercharged V6 MHEV',
@@ -69,9 +69,10 @@ const fleet = [
     name: 'Lush Royale',
     subtitle: 'Toyota Land Cruiser Prado / Armored Suite',
     images: [
-      '/Toyota land cruiser.jpg',
-      '/Toyota land cruiser2.jpg',
-      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=1200&q=80'
     ],
     specs: {
       engine: '2.8L Turbo Diesel / Hybrid Max',
@@ -116,7 +117,7 @@ const itemVariants: any = {
   }
 };
 
-function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
+function VehicleCarousel({ images, alt, sizes }: { images: string[], alt: string, sizes?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = (e: React.MouseEvent) => {
@@ -147,7 +148,7 @@ function VehicleCarousel({ images, alt }: { images: string[], alt: string }) {
           transition={{ duration: 0.3 }}
           className="w-full h-full relative"
         >
-          <FadeImage src={images[currentIndex]} alt={`Detailed view of ${alt} showing luxury features - View ${currentIndex + 1} of ${images.length}`} className="w-full h-full object-cover animate-kenburns" />
+          <FadeImage src={images[currentIndex]} alt={`Detailed view of ${alt} showing luxury features - View ${currentIndex + 1} of ${images.length}`} className="w-full h-full object-cover animate-kenburns" sizes={sizes} />
         </motion.div>
       </AnimatePresence>
       
@@ -224,7 +225,7 @@ function VehicleCard({
            style={{ y }}
            className="absolute -top-[15%] -bottom-[15%] left-0 right-0 h-[130%] w-full z-0"
          >
-           <VehicleCarousel images={tier.images} alt={`${tier.name} class vehicle showing ${tier.subtitle}`} />
+           <VehicleCarousel images={tier.images} alt={`${tier.name} class vehicle showing ${tier.subtitle}`} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
          </motion.div>
          
          {/* Subtle elegant category typography overlay tag */}
@@ -382,7 +383,34 @@ export default function Fleet() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+
+    const handleOpenQuickview = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (!customEvent.detail || !customEvent.detail.name) return;
+      
+      const vehicleName = customEvent.detail.name.toLowerCase();
+      const found = fleetData.find(f => 
+        f.name.toLowerCase().includes(vehicleName) || 
+        f.subtitle.toLowerCase().includes(vehicleName)
+      );
+      
+      if (found) {
+        setFilterTier('All');
+        setExpandedVehicle(found);
+        
+        // Scroll smoothly to fleet section
+        const fleetSection = document.getElementById('fleet');
+        if (fleetSection) {
+          fleetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+
+    window.addEventListener('open-vehicle-quickview', handleOpenQuickview);
+    return () => {
+      window.removeEventListener('open-vehicle-quickview', handleOpenQuickview);
+    };
+  }, [fleetData]);
 
   const toggleCompare = (tierName: string) => {
     if (compareList.includes(tierName)) {
@@ -538,7 +566,7 @@ export default function Fleet() {
             </button>
             
             <div className="w-full max-w-6xl aspect-[4/3] md:aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
-               <VehicleCarousel images={galleryVehicle.images} alt={`${galleryVehicle.name} HD Gallery`} />
+               <VehicleCarousel images={galleryVehicle.images} alt={`${galleryVehicle.name} HD Gallery`} sizes="100vw" />
             </div>
             
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-[10px] tracking-widest uppercase font-semibold">
@@ -581,7 +609,7 @@ export default function Fleet() {
                   return (
                     <div key={tierName} className="flex flex-col gap-6">
                       <div className="aspect-[16/10] bg-[#111] rounded-lg overflow-hidden relative">
-                        <FadeImage src={vehicle.images[0]} alt={`${vehicle.name} class premium chauffeured vehicle comparison view`} className="w-full h-full object-cover" />
+                        <FadeImage src={vehicle.images[0]} alt={`${vehicle.name} class premium chauffeured vehicle comparison view`} className="w-full h-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
                       </div>
                       <div>
                         <span className="text-lush-yellow text-xs tracking-widest uppercase font-semibold">{vehicle.name} Class</span>
@@ -654,7 +682,7 @@ export default function Fleet() {
 
               {/* Left Side: Image Slider */}
               <div className="w-full md:w-1/2 aspect-video md:aspect-auto md:min-h-[450px]">
-                <VehicleCarousel images={expandedVehicle.images} alt={expandedVehicle.name} />
+                <VehicleCarousel images={expandedVehicle.images} alt={expandedVehicle.name} sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
 
               {/* Right Side: Details */}

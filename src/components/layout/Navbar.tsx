@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Logo } from "../ui/Logo";
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Moon, Circle, History } from 'lucide-react';
+import { Menu, X, Moon, Circle, History, Search, Shield, Car, MapPin } from 'lucide-react';
 import FadeImage from '../ui/FadeImage';
 import TripHistory from '../ui/TripHistory';
 
@@ -13,6 +13,118 @@ export default function Navbar() {
   const { lang, setLang, t } = useI18n();
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
+  
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Search database mapping fleet vehicles and service area hubs
+  const searchPool = [
+    {
+      type: 'vehicle',
+      id: 'luxury',
+      name: 'Lush Luxury',
+      subtitle: 'Lexus RX 350 / Premium SUV',
+      keywords: ['lexus', 'rx', '350', 'suv', 'luxury', 'car', 'vehicle'],
+    },
+    {
+      type: 'vehicle',
+      id: 'executive',
+      name: 'Lush Executive',
+      subtitle: 'Range Rover SE / Prestige Class',
+      keywords: ['range rover', 'se', 'prestige', 'rover', 'executive', 'car', 'vehicle'],
+    },
+    {
+      type: 'vehicle',
+      id: 'royale',
+      name: 'Lush Royale',
+      subtitle: 'Toyota Land Cruiser Prado / Armored Suite',
+      keywords: ['toyota', 'land cruiser', 'prado', 'armored', 'bulletproof', 'b6', 'royale', 'car', 'vehicle', 'security'],
+    },
+    {
+      type: 'area',
+      id: 'ikoyi',
+      name: 'Ikoyi',
+      subtitle: 'Corporate elegance & luxury living',
+      keywords: ['ikoyi', 'island', 'lagos', 'services', 'coverage'],
+    },
+    {
+      type: 'area',
+      id: 'vi',
+      name: 'Victoria Island (VI)',
+      subtitle: 'Heart of commerce & fine dining',
+      keywords: ['vi', 'victoria island', 'island', 'lagos', 'services', 'coverage'],
+    },
+    {
+      type: 'area',
+      id: 'lekki',
+      name: 'Lekki Phase 1',
+      subtitle: 'Lifestyle & contemporary culture',
+      keywords: ['lekki', 'phase 1', 'island', 'lagos', 'services', 'coverage'],
+    },
+    {
+      type: 'area',
+      id: 'ikeja',
+      name: 'Ikeja GRA',
+      subtitle: 'Mainland hub of business and tranquility',
+      keywords: ['ikeja', 'gra', 'mainland', 'lagos', 'services', 'coverage'],
+    },
+    {
+      type: 'area',
+      id: 'yaba',
+      name: 'Yaba',
+      subtitle: 'Tech ecosystem and innovation',
+      keywords: ['yaba', 'mainland', 'lagos', 'services', 'coverage'],
+    }
+  ];
+
+  const filteredResults = searchQuery.trim() === '' 
+    ? [] 
+    : searchPool.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.keywords.some(k => k.includes(searchQuery.toLowerCase()))
+      );
+
+  const handleSelectResult = (item: typeof searchPool[0]) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSelectedIndex(0);
+
+    if (item.type === 'vehicle') {
+      window.dispatchEvent(new CustomEvent('open-vehicle-quickview', { 
+        detail: { name: item.name } 
+      }));
+    } else if (item.type === 'area') {
+      window.dispatchEvent(new CustomEvent('open-service-area', { 
+        detail: { name: item.name } 
+      }));
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!searchOpen) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSearchOpen(false);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev + 1) % Math.max(1, filteredResults.length));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev - 1 + filteredResults.length) % Math.max(1, filteredResults.length));
+      } else if (e.key === 'Enter') {
+        if (filteredResults[selectedIndex]) {
+          handleSelectResult(filteredResults[selectedIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen, filteredResults, selectedIndex]);
   
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncQueueCount, setSyncQueueCount] = useState(0);
@@ -158,6 +270,16 @@ export default function Navbar() {
               <History size={16} className="group-hover:scale-110 transition-transform" aria-hidden="true" />
             </button>
 
+            {/* Search Trigger (Universal Header) */}
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="text-white/60 hover:text-lush-yellow transition-colors p-2 flex items-center gap-2 group animate-fade-in"
+              aria-label="Search vehicles or service areas"
+            >
+              <Search size={16} className="group-hover:scale-110 transition-transform" />
+              <span className="hidden xl:block text-[11px] font-medium tracking-[0.2em] uppercase">Search</span>
+            </button>
+
             <a href="#book" className="hidden md:inline-flex px-6 py-3 bg-transparent border border-white/20 text-white text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-charcoal transition-all">
               {t('nav.quote')}
             </a>
@@ -281,6 +403,130 @@ export default function Navbar() {
 
       <AnimatePresence>
         {dashboardOpen && <TripHistory onClose={() => setDashboardOpen(false)} />}
+      </AnimatePresence>
+
+      {/* Search Overlay */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[110] bg-[#050505]/95 backdrop-blur-xl flex flex-col items-center justify-start pt-24 px-6 md:px-12"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+              className="absolute top-6 right-6 md:top-8 md:right-12 text-white/50 hover:text-white transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-lush-yellow z-30 animate-fade-in"
+              aria-label="Close search"
+            >
+              <X size={28} />
+            </button>
+
+            {/* Main Search Container */}
+            <motion.div
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -30, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250, delay: 0.1 }}
+              className="w-full max-w-2xl bg-[#0a0a0a]/80 border border-white/5 rounded-2xl p-6 md:p-8 mt-4 md:mt-12 shadow-2xl relative overflow-hidden"
+            >
+              {/* Decorative Luxury Glow */}
+              <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-lush-yellow/40 to-transparent" />
+              
+              <div className="flex items-center gap-4 border-b border-white/10 pb-4 mb-6">
+                <Search className="text-lush-yellow shrink-0" size={24} />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Search vehicles, armor specs, or service hubs..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
+                  className="w-full bg-transparent text-white placeholder-white/30 text-lg md:text-xl font-display focus:outline-none"
+                  aria-label="Search site content"
+                />
+              </div>
+
+              {/* Suggestions when query is empty */}
+              {searchQuery.trim() === '' ? (
+                <div>
+                  <h4 className="text-[10px] text-muted-1 uppercase tracking-widest font-semibold mb-4">Suggested Searches</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { name: 'Armored Land Cruiser', icon: Shield, type: 'vehicle' },
+                      { name: 'Range Rover SE', icon: Car, type: 'vehicle' },
+                      { name: 'Ikoyi Coverage', icon: MapPin, type: 'area' },
+                      { name: 'Lekki Phase 1', icon: MapPin, type: 'area' }
+                    ].map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSearchQuery(suggestion.name)}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-left text-white/80 hover:text-white transition-all text-sm group"
+                      >
+                        <suggestion.icon size={16} className="text-white/40 group-hover:text-lush-yellow transition-colors" />
+                        <span className="font-light">{suggestion.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Matching Results */
+                <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  {filteredResults.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-[10px] text-lush-yellow uppercase tracking-widest font-semibold mb-2">
+                        Matching Results ({filteredResults.length})
+                      </div>
+                      
+                      {filteredResults.map((item, idx) => {
+                        const isSelected = idx === selectedIndex;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleSelectResult(item)}
+                            onMouseEnter={() => setSelectedIndex(idx)}
+                            className={`flex items-center justify-between p-3 rounded-lg text-left transition-all ${
+                              isSelected 
+                                ? 'bg-lush-yellow text-black font-medium' 
+                                : 'bg-white/5 hover:bg-white/10 text-white border border-white/5'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {item.type === 'vehicle' ? (
+                                item.keywords.includes('armored') ? (
+                                  <Shield size={18} className={isSelected ? 'text-black' : 'text-lush-yellow'} />
+                                ) : (
+                                  <Car size={18} className={isSelected ? 'text-black' : 'text-lush-yellow'} />
+                                )
+                              ) : (
+                                <MapPin size={18} className={isSelected ? 'text-black' : 'text-lush-yellow'} />
+                              )}
+                              <div>
+                                <div className="text-sm font-semibold">{item.name}</div>
+                                <div className={`text-xs font-light ${isSelected ? 'text-black/80' : 'text-white/50'}`}>
+                                  {item.subtitle}
+                                </div>
+                              </div>
+                            </div>
+                            <span className={`text-[9px] uppercase tracking-wider ${isSelected ? 'bg-black/20 text-black px-2 py-0.5 rounded' : 'text-white/30'}`}>
+                              {item.type === 'vehicle' ? 'Fleet' : 'Location'}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-white/40 font-light">
+                      No results found for "<span className="text-white/60 font-medium">{searchQuery}</span>". 
+                      <p className="text-xs mt-2 text-white/30">Try searching for "Armored", "Range Rover", or "Lekki".</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </>
   );

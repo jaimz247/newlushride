@@ -22,7 +22,13 @@ const DEFAULT_CONFIG = {
     phone: "+234 703 740 4784",
     email: "Info@lushride.com",
     address: "Victoria Island, Lagos, Nigeria",
-    whatsapp: "+234 703 740 4784"
+    whatsapp: "+234 703 740 4784",
+    instagram: "https://instagram.com/lushrideng",
+    twitter: "https://twitter.com/lushride",
+    facebook: "https://facebook.com/lushride",
+    linkedin: "https://linkedin.com/company/lushride",
+    registration: "RC-1928472 / Lagos Executive Transport Licensing Board",
+    hours: "24/7/365 White-Glove Dispatch"
   },
   fleet: [
     {
