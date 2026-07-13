@@ -53,15 +53,29 @@ export default function FAQ() {
   useEffect(() => {
     fetch('/api/site-config')
       .then(res => {
-        if (res.ok) return res.json();
-        throw new Error();
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error("Invalid response or content type");
       })
       .then(data => {
         if (data && data.faqs) {
           setFaqList(data.faqs);
         }
       })
-      .catch(err => console.log("Using static local fallback FAQs config", err));
+      .catch(err => {
+        console.log("Using static local fallback FAQs config", err);
+        const cached = localStorage.getItem("lush_site_config_fallback");
+        if (cached) {
+          try {
+            const data = JSON.parse(cached);
+            if (data && data.faqs) {
+              setFaqList(data.faqs);
+            }
+          } catch (e) {}
+        }
+      });
   }, []);
 
   const schemaData = generateFAQSchema(faqList, "https://lushride.com/#faq");

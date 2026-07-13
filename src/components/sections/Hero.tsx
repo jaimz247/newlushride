@@ -192,8 +192,11 @@ export default function Hero() {
 
     fetch('/api/site-config')
       .then(res => {
-        if (res.ok) return res.json();
-        throw new Error();
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error("Invalid response or content type");
       })
       .then(data => {
         if (data && data.hero) {
@@ -203,7 +206,21 @@ export default function Hero() {
           });
         }
       })
-      .catch(err => console.log("Using static local fallback hero config", err));
+      .catch(err => {
+        console.log("Using static local fallback hero config", err);
+        const cached = localStorage.getItem("lush_site_config_fallback");
+        if (cached) {
+          try {
+            const data = JSON.parse(cached);
+            if (data && data.hero) {
+              setHeroText({
+                title: data.hero.title,
+                subtitle: data.hero.subtitle
+              });
+            }
+          } catch (e) {}
+        }
+      });
   }, [t]);
   const [trafficAlert, setTrafficAlert] = useState<{ status: string, area: string, level: 'low' | 'moderate' | 'high' } | null>(null);
   const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);

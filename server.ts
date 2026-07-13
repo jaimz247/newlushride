@@ -199,7 +199,7 @@ app.get("/api/site-config", (req, res) => {
 // API Route for Admin Login
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body;
-  const configuredPassword = process.env.ADMIN_PASSWORD || "lushadmin";
+  const configuredPassword = process.env.ADMIN_PASSWORD || "@Lushride123";
 
   if (password === configuredPassword) {
     return res.json({ success: true, token: ADMIN_TOKEN });

@@ -356,7 +356,10 @@ export default function Fleet() {
   useEffect(() => {
     fetch('/api/site-config')
       .then(res => {
-        if (res.ok) return res.json();
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
         throw new Error("Unable to fetch configuration");
       })
       .then(data => {
@@ -366,6 +369,15 @@ export default function Fleet() {
       })
       .catch(err => {
         console.log("Using static local fallback fleet config", err);
+        const cached = localStorage.getItem("lush_site_config_fallback");
+        if (cached) {
+          try {
+            const data = JSON.parse(cached);
+            if (data && data.fleet) {
+              setFleetData(data.fleet);
+            }
+          } catch (e) {}
+        }
       })
       .finally(() => {
         setIsLoading(false);
