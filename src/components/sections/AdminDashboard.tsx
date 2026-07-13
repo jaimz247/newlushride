@@ -386,7 +386,8 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
     setIsLoading(true);
     try {
       const res = await fetch('/api/site-config');
-      if (res.ok) {
+      const contentType = res.headers.get('content-type');
+      if (res.ok && contentType && contentType.includes('application/json')) {
         const data = await res.json();
         setConfig(data);
       } else {
@@ -415,15 +416,26 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
         body: JSON.stringify({ password })
       });
 
+      const contentType = res.headers.get('content-type');
       if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem(TOKEN_KEY, data.token);
-        setIsAuthenticated(true);
-        toast.success("Welcome Back, Commander. Authorized access granted.");
-        fetchConfig();
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          localStorage.setItem(TOKEN_KEY, data.token);
+          setIsAuthenticated(true);
+          toast.success("Welcome Back, Commander. Authorized access granted.");
+          fetchConfig();
+        } else {
+          throw new Error('Expected JSON response but received different content type');
+        }
       } else {
-        const err = await res.json();
-        toast.error(err.error || "Access denied. Invalid password.");
+        let errorMsg = "Access denied. Invalid password.";
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const err = await res.json();
+            errorMsg = err.error || errorMsg;
+          } catch (jsonErr) {}
+        }
+        toast.error(errorMsg);
       }
     } catch (e) {
       toast.error("Failed to connect to authentication gateway.");
