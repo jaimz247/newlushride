@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Lock, CheckCircle2, AlertCircle, Plus, Trash2, Save, 
-  HelpCircle, Phone, Info, Car, FileText, LogOut, RefreshCw, Eye, Sparkles, AlertTriangle, Terminal
+  HelpCircle, Phone, Info, Car, FileText, LogOut, RefreshCw, Eye, Sparkles, AlertTriangle, Terminal,
+  Activity, Gauge, Zap, TrendingUp, Laptop, MousePointer
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteConfig } from '../../types';
+import { getTelemetryData, PerformanceMetrics, EngagementEvent, logEngagementEvent } from '../../lib/telemetry';
 
 export interface FleetErrorLog {
   id: string;
@@ -14,6 +16,317 @@ export interface FleetErrorLog {
   action: string;
   message: string;
   details?: string;
+}
+
+function PerformanceTrackerView() {
+  const [telemetry, setTelemetry] = useState<{ metrics: any; events: any[] }>(() => getTelemetryData());
+
+  useEffect(() => {
+    // Poll telemetry data every 2 seconds for active monitor updates
+    const interval = setInterval(() => {
+      setTelemetry(getTelemetryData());
+    }, 2000);
+
+    // Also listen to custom live event streams
+    const handleLiveUpdate = () => {
+      setTelemetry(getTelemetryData());
+    };
+
+    window.addEventListener('lush_telemetry_update', handleLiveUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('lush_telemetry_update', handleLiveUpdate);
+    };
+  }, []);
+
+  const { metrics, events } = telemetry;
+
+  // Helpers to get ratings & colors
+  const getTtfbRating = (v: number) => {
+    if (v <= 200) return { label: 'Optimal (Excellent)', color: 'text-green-400', bg: 'bg-green-500' };
+    if (v <= 600) return { label: 'Acceptable', color: 'text-amber-400', bg: 'bg-amber-500' };
+    return { label: 'Needs Optimization', color: 'text-red-400', bg: 'bg-red-500' };
+  };
+
+  const getFcpRating = (v: number) => {
+    if (v <= 1000) return { label: 'Optimal (Excellent)', color: 'text-green-400', bg: 'bg-green-500' };
+    if (v <= 3000) return { label: 'Acceptable', color: 'text-amber-400', bg: 'bg-amber-500' };
+    return { label: 'Needs Attention', color: 'text-red-400', bg: 'bg-red-500' };
+  };
+
+  const getLoadRating = (v: number) => {
+    if (v <= 1500) return { label: 'Optimal (Executive Speed)', color: 'text-green-400', bg: 'bg-green-500' };
+    if (v <= 4000) return { label: 'Good', color: 'text-amber-400', bg: 'bg-amber-500' };
+    return { label: 'Slow Connection', color: 'text-red-400', bg: 'bg-red-500' };
+  };
+
+  const getClsRating = (v: number) => {
+    if (v <= 0.1) return { label: 'Stable (Excellent)', color: 'text-green-400', bg: 'bg-green-500' };
+    if (v <= 0.25) return { label: 'Moderate', color: 'text-amber-400', bg: 'bg-amber-500' };
+    return { label: 'Unstable Layout', color: 'text-red-400', bg: 'bg-red-500' };
+  };
+
+  const getFidRating = (v: number) => {
+    if (v <= 100) return { label: 'Responsive (Instant)', color: 'text-green-400', bg: 'bg-green-500' };
+    if (v <= 300) return { label: 'Slight Delay', color: 'text-amber-400', bg: 'bg-amber-500' };
+    return { label: 'Unresponsive', color: 'text-red-400', bg: 'bg-red-500' };
+  };
+
+  const ttfbRate = getTtfbRating(metrics.ttfb);
+  const fcpRate = getFcpRating(metrics.fcp);
+  const loadRate = getLoadRating(metrics.loadTime);
+  const clsRate = getClsRating(metrics.cls);
+  const fidRate = getFidRating(metrics.fid);
+
+  return (
+    <div className="space-y-10 animate-fadeIn text-white">
+      <div className="border-b border-white/5 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display text-white uppercase tracking-widest mb-1">Core Web Vitals & Analytics</h2>
+          <p className="text-xs text-[#999] uppercase tracking-wider">Real-time performance measurements and visitor engagement tracking</p>
+        </div>
+        <button
+          onClick={() => {
+            logEngagementEvent('system', 'Manual performance check triggered', 'Diagnostics reloaded successfully');
+            toast.success("Diagnostics refreshed!");
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-lush-yellow hover:bg-lush-yellow/90 text-charcoal text-xs font-semibold tracking-widest uppercase rounded shadow-[0_0_15px_rgba(249,211,0,0.15)] transition-all"
+        >
+          <RefreshCw size={12} /> Force Diagnostic Check
+        </button>
+      </div>
+
+      {/* Grid of meters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Metric Card: TTFB */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-widest text-white/40">Response Latency</span>
+              <h3 className="text-sm font-semibold tracking-wide text-white">TTFB (Time to First Byte)</h3>
+            </div>
+            <span className={`text-xl font-mono font-bold ${ttfbRate.color}`}>{metrics.ttfb} ms</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${ttfbRate.bg} transition-all duration-500`}
+                style={{ width: `${Math.min(100, (metrics.ttfb / 800) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>0ms</span>
+              <span className={ttfbRate.color}>{ttfbRate.label}</span>
+              <span>800ms</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric Card: FCP */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-widest text-white/40">Visual Initialization</span>
+              <h3 className="text-sm font-semibold tracking-wide text-white">FCP (First Contentful Paint)</h3>
+            </div>
+            <span className={`text-xl font-mono font-bold ${fcpRate.color}`}>{metrics.fcp} ms</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${fcpRate.bg} transition-all duration-500`}
+                style={{ width: `${Math.min(100, (metrics.fcp / 3000) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>0ms</span>
+              <span className={fcpRate.color}>{fcpRate.label}</span>
+              <span>3000ms</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric Card: Load Time */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-widest text-white/40">App Initialization</span>
+              <h3 className="text-sm font-semibold tracking-wide text-white">Page Fully Loaded</h3>
+            </div>
+            <span className={`text-xl font-mono font-bold ${loadRate.color}`}>{metrics.loadTime} ms</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${loadRate.bg} transition-all duration-500`}
+                style={{ width: `${Math.min(100, (metrics.loadTime / 5000) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>0ms</span>
+              <span className={loadRate.color}>{loadRate.label}</span>
+              <span>5000ms</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric Card: CLS */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-widest text-white/40">Visual Stability</span>
+              <h3 className="text-sm font-semibold tracking-wide text-white">CLS (Cumulative Layout Shift)</h3>
+            </div>
+            <span className={`text-xl font-mono font-bold ${clsRate.color}`}>{metrics.cls}</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${clsRate.bg} transition-all duration-500`}
+                style={{ width: `${Math.min(100, (metrics.cls / 0.3) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>0.00</span>
+              <span className={clsRate.color}>{clsRate.label}</span>
+              <span>0.30+</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric Card: FID */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-widest text-white/40">Input Responsiveness</span>
+              <h3 className="text-sm font-semibold tracking-wide text-white">FID (First Input Delay)</h3>
+            </div>
+            <span className={`text-xl font-mono font-bold ${fidRate.color}`}>{metrics.fid} ms</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${fidRate.bg} transition-all duration-500`}
+                style={{ width: `${Math.min(100, (metrics.fid / 300) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-white/30 uppercase tracking-widest font-mono">
+              <span>0ms</span>
+              <span className={fidRate.color}>{fidRate.label}</span>
+              <span>300ms</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Connection telemetry card */}
+        <div className="bg-[#0c0c0c] border border-white/10 rounded-xl p-6 flex flex-col justify-between space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-lush-yellow/[0.02] rounded-full blur-xl pointer-events-none" />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-lush-yellow/10 border border-lush-yellow/20 rounded-lg flex items-center justify-center text-lush-yellow">
+              <Zap size={16} />
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-widest text-white/30">Client Network Status</span>
+              <h4 className="text-xs font-semibold text-white/90">Central Broadband Uplink</h4>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-2 text-left">
+            <div className="bg-white/[0.01] p-2 rounded border border-white/5">
+              <span className="text-[8px] uppercase text-white/40 block font-mono">RTT / latency</span>
+              <span className="text-xs font-semibold font-mono text-white/90">{metrics.rtt} ms</span>
+            </div>
+            <div className="bg-white/[0.01] p-2 rounded border border-white/5">
+              <span className="text-[8px] uppercase text-white/40 block font-mono">bandwidth</span>
+              <span className="text-xs font-semibold font-mono text-white/90">{metrics.downlink} Mbps</span>
+            </div>
+            <div className="bg-white/[0.01] p-2 rounded border border-white/5">
+              <span className="text-[8px] uppercase text-white/40 block font-mono">Class of conn.</span>
+              <span className="text-xs font-semibold font-mono text-lush-yellow uppercase">{metrics.effectiveType}</span>
+            </div>
+            <div className="bg-white/[0.01] p-2 rounded border border-white/5">
+              <span className="text-[8px] uppercase text-white/40 block font-mono">Total Views</span>
+              <span className="text-xs font-semibold font-mono text-white/90">{metrics.totalViews}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Real-time User Engagement Event Log Feed */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lush-yellow opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-lush-yellow"></span>
+            </span>
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-white">Live Engagement Telemetry Feed</h3>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("lush_engagement_events");
+              setTelemetry(getTelemetryData());
+              toast.success("Engagement logs cleared");
+            }}
+            disabled={events.length === 0}
+            className="text-[10px] font-mono text-white/40 hover:text-white transition-colors uppercase tracking-widest disabled:opacity-40"
+          >
+            Clear Feed
+          </button>
+        </div>
+
+        {events.length === 0 ? (
+          <div className="border border-white/5 bg-charcoal/30 rounded-xl p-12 text-center max-w-lg mx-auto">
+            <Laptop className="text-white/20 mx-auto mb-4 w-8 h-8" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white mb-1">Awaiting Visitor Activity</h3>
+            <p className="text-[11px] text-white/40 leading-relaxed">
+              No recent interaction metrics have been cached yet. Try scrolling the homepage, clicking options, or opening from other devices to watch live logs stream in.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {events.map((event) => (
+              <div 
+                key={event.id}
+                className="flex items-start gap-3 p-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-lg transition-colors text-left"
+              >
+                <div className={`p-2 rounded-md shrink-0 ${
+                  event.category === 'click' 
+                    ? 'bg-lush-yellow/10 text-lush-yellow' 
+                    : event.category === 'scroll' 
+                    ? 'bg-blue-500/10 text-blue-400' 
+                    : event.category === 'visibility' 
+                    ? 'bg-purple-500/10 text-purple-400'
+                    : 'bg-white/5 text-white/70'
+                }`}>
+                  {event.category === 'click' ? (
+                    <MousePointer size={12} />
+                  ) : event.category === 'scroll' ? (
+                    <TrendingUp size={12} />
+                  ) : event.category === 'visibility' ? (
+                    <Eye size={12} />
+                  ) : (
+                    <Terminal size={12} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-white truncate">{event.action}</p>
+                    <span className="text-[9px] font-mono text-white/30 shrink-0">
+                      {new Date(event.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  {event.details && (
+                    <p className="text-[10px] text-white/50 font-mono mt-0.5">{event.details}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
@@ -25,7 +338,7 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'hero' | 'fleet' | 'faq' | 'contact' | 'logs'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'fleet' | 'faq' | 'contact' | 'logs' | 'performance'>('hero');
   const [errorLogs, setErrorLogs] = useState<FleetErrorLog[]>([]);
 
   // Token cache key
@@ -469,6 +782,18 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
             >
               <Terminal size={16} />
               <span className="hidden md:inline uppercase tracking-widest text-xs">Diagnostic Logs</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('performance')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded transition-all text-left ${
+                activeTab === 'performance' 
+                  ? 'bg-lush-yellow text-black font-semibold' 
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Activity size={16} />
+              <span className="hidden md:inline uppercase tracking-widest text-xs">Core Web Vitals</span>
             </button>
           </nav>
 
@@ -960,6 +1285,11 @@ export default function AdminDashboard({ onClose }: { onClose?: () => void }) {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Tab: Performance Analytics */}
+              {activeTab === 'performance' && (
+                <PerformanceTrackerView />
               )}
             </div>
           )}

@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { initTelemetry } from './lib/telemetry';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import CustomCursor from './components/ui/CustomCursor';
@@ -30,8 +31,36 @@ function Divider() {
 }
 
 const GenericFallback = () => (
-  <div className="py-20 flex justify-center items-center">
-    <div className="w-6 h-6 border-2 border-lush-yellow border-t-transparent animate-spin rounded-full"></div>
+  <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-32 space-y-16">
+    {/* Hero Presentation Skeleton with high luxury shimmer */}
+    <div className="space-y-6">
+      <div className="w-32 h-4 bg-lush-yellow/10 animate-pulse rounded border border-lush-yellow/20"></div>
+      <div className="w-2/3 h-14 bg-white/5 animate-pulse rounded-lg"></div>
+      <div className="w-1/2 h-4 bg-white/5 animate-pulse rounded-lg"></div>
+      <div className="flex gap-4 pt-4">
+        <div className="w-40 h-12 bg-lush-yellow/20 animate-pulse rounded"></div>
+        <div className="w-40 h-12 bg-white/5 animate-pulse rounded border border-white/10"></div>
+      </div>
+    </div>
+    
+    {/* Grid Skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-[#0A0A0A] border border-white/5 rounded-xl p-8 space-y-6 animate-pulse relative overflow-hidden">
+          {/* Shimmer overlay effect */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/[0.03] to-transparent" />
+          <div className="w-12 h-12 bg-white/5 rounded-lg border border-white/10"></div>
+          <div className="space-y-2">
+            <div className="w-2/3 h-5 bg-white/5 rounded"></div>
+            <div className="w-1/3 h-3 bg-white/5 rounded"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="w-full h-3 bg-white/5 rounded"></div>
+            <div className="w-4/5 h-3 bg-white/5 rounded"></div>
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 );
 
@@ -89,6 +118,7 @@ export default function App() {
   const [isAdminView, setIsAdminView] = useState(false);
 
   useEffect(() => {
+    initTelemetry();
     const checkPath = () => {
       setIsAdminView(window.location.pathname === '/admin');
     };
@@ -107,9 +137,29 @@ export default function App() {
       <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto">
         <Toaster position="bottom-center" />
         <Suspense fallback={
-          <div className="h-screen flex flex-col items-center justify-center bg-[#050505]">
-            <div className="w-8 h-8 border-2 border-lush-yellow border-t-transparent animate-spin rounded-full mb-4"></div>
-            <p className="text-xs uppercase tracking-widest text-white/40">Loading Command Console...</p>
+          <div className="h-screen flex flex-col items-center justify-center bg-[#050505] p-6">
+            <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl p-8 space-y-6 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+              {/* Gold header accent line */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-lush-yellow/80 via-lush-yellow to-white/60" />
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.02] to-transparent" />
+              
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-xl bg-lush-yellow/10 animate-pulse flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-md bg-lush-yellow/20"></div>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <div className="w-1/2 h-4 bg-white/10 rounded animate-pulse"></div>
+                  <div className="w-1/3 h-3 bg-white/5 rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="w-full h-8 bg-white/5 rounded animate-pulse"></div>
+                <div className="w-full h-24 bg-white/5 rounded animate-pulse"></div>
+              </div>
+              <p className="text-center text-[10px] uppercase tracking-widest text-lush-yellow/60 font-mono animate-pulse">
+                INITIALIZING ENCRYPTED TERMINAL...
+              </p>
+            </div>
           </div>
         }>
           <AdminDashboard onClose={navigateToHome} />

@@ -148,7 +148,17 @@ export default function Footer() {
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Terms</a>
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Legal Notice</a>
-            <a href="/admin" className="text-xs font-light text-muted-1 hover:text-lush-yellow transition-colors font-medium">Staff Login</a>
+            <a 
+              href="/admin" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/admin');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+              className="text-xs font-light text-muted-1 hover:text-lush-yellow transition-colors font-medium"
+            >
+              Staff Login
+            </a>
           </div>
         </div>
 
