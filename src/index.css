@@ -4,21 +4,50 @@
 @layer base {
   :root {
     --bg-theme: #050505;
+    
+    /* Admin Dark Mode Variables */
+    --admin-bg: #080808;
+    --admin-text: #ffffff;
+    --admin-border: rgba(255, 255, 255, 0.1);
+    --admin-card-bg: #0c0c0c;
+    --admin-card-border: rgba(255, 255, 255, 0.08);
+    --admin-input-bg: rgba(0, 0, 0, 0.4);
+    --admin-input-border: rgba(255, 255, 255, 0.15);
+    --admin-input-text: #ffffff;
+    --admin-muted-text: #888888;
+    --admin-accent-bg: rgba(249, 211, 0, 0.1);
+    --admin-accent-border: rgba(249, 211, 0, 0.2);
   }
   
   :root[data-theme="obsidian"] {
     --bg-theme: #000000;
   }
+
+  :root[data-theme="light"] {
+    /* Admin Light Mode Variables */
+    --admin-bg: #f4f5f7;
+    --admin-text: #0f172a;
+    --admin-border: #cbd5e1;
+    --admin-card-bg: #ffffff;
+    --admin-card-border: #e2e8f0;
+    --admin-input-bg: #ffffff;
+    --admin-input-border: #cbd5e1;
+    --admin-input-text: #0f172a;
+    --admin-muted-text: #64748b;
+    --admin-accent-bg: rgba(249, 211, 0, 0.1);
+    --admin-accent-border: rgba(249, 211, 0, 0.3);
+  }
 }
 
-:root[data-theme="light"] {
+/* Global Light Mode Inversion (only for main site, not admin dashboard) */
+:root[data-theme="light"]:not(.admin-active) {
   filter: invert(1) hue-rotate(180deg);
 }
 
-:root[data-theme="light"] img,
-:root[data-theme="light"] video,
-:root[data-theme="light"] .no-invert,
-:root[data-theme="light"] .bg-white\/5 {
+:root[data-theme="light"]:not(.admin-active) img,
+:root[data-theme="light"]:not(.admin-active) video,
+:root[data-theme="light"]:not(.admin-active) .no-invert,
+:root[data-theme="light"]:not(.admin-active) .bg-white\/5 {
   filter: invert(1) hue-rotate(180deg);
 }
 
@@ -35,6 +64,18 @@
   --color-obsidian: #000000;
   --color-muted-1: #888888;
   --color-muted-2: #CCCCCC;
+  
+  --color-admin-bg: var(--admin-bg);
+  --color-admin-text: var(--admin-text);
+  --color-admin-border: var(--admin-border);
+  --color-admin-card-bg: var(--admin-card-bg);
+  --color-admin-card-border: var(--admin-card-border);
+  --color-admin-input-bg: var(--admin-input-bg);
+  --color-admin-input-border: var(--admin-input-border);
+  --color-admin-input-text: var(--admin-input-text);
+  --color-admin-muted: var(--admin-muted-text);
+  --color-admin-accent-bg: var(--admin-accent-bg);
+  --color-admin-accent-border: var(--admin-accent-border);
 }
 
 body {

@@ -178,10 +178,85 @@ function getSiteConfig() {
   return DEFAULT_CONFIG;
 }
 
+// Generate sitemap.xml automatically based on current site configurations
+function generateSitemap(config: any) {
+  try {
+    const currentDate = new Date().toISOString().split('T')[0];
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    
+    // Base static layout sections
+    const staticPages = [
+      { path: "", priority: "1.0", freq: "daily" },
+      { path: "#about", priority: "0.8", freq: "weekly" },
+      { path: "#services", priority: "0.85", freq: "weekly" },
+      { path: "#fleet", priority: "0.9", freq: "daily" },
+      { path: "#hubs", priority: "0.7", freq: "monthly" },
+      { path: "#partner", priority: "0.7", freq: "monthly" },
+      { path: "#contact", priority: "0.95", freq: "daily" }
+    ];
+
+    staticPages.forEach(p => {
+      xml += `  <url>\n`;
+      xml += `    <loc>https://lushride.ng/${p.path}</loc>\n`;
+      xml += `    <lastmod>${currentDate}</lastmod>\n`;
+      xml += `    <changefreq>${p.freq}</changefreq>\n`;
+      xml += `    <priority>${p.priority}</priority>\n`;
+      xml += `  </url>\n`;
+    });
+
+    // Dynamic fleet vehicles routing
+    if (config && config.fleet && Array.isArray(config.fleet)) {
+      config.fleet.forEach((car: any) => {
+        if (car.name) {
+          const slug = car.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          xml += `  <url>\n`;
+          xml += `    <loc>https://lushride.ng/#fleet/${slug}</loc>\n`;
+          xml += `    <lastmod>${currentDate}</lastmod>\n`;
+          xml += `    <changefreq>weekly</changefreq>\n`;
+          xml += `    <priority>0.8</priority>\n`;
+          xml += `  </url>\n`;
+        }
+      });
+    }
+
+    // Dynamic FAQ categories mapping
+    if (config && config.faqs && Array.isArray(config.faqs)) {
+      const categories = Array.from(new Set(config.faqs.map((f: any) => f.category).filter(Boolean)));
+      categories.forEach((cat: any) => {
+        const slug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        xml += `  <url>\n`;
+        xml += `    <loc>https://lushride.ng/#faq/${slug}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += `    <changefreq>monthly</changefreq>\n`;
+        xml += `    <priority>0.5</priority>\n`;
+        xml += `  </url>\n`;
+      });
+    }
+
+    xml += `</urlset>\n`;
+
+    const publicPath = path.join(process.cwd(), "public", "sitemap.xml");
+    fs.writeFileSync(publicPath, xml, "utf-8");
+    console.log(`[Sitemap] Sitemap auto-refreshed successfully at ${publicPath}`);
+
+    // If production build output directory exists, replicate there
+    const distPath = path.join(process.cwd(), "dist", "sitemap.xml");
+    if (fs.existsSync(path.dirname(distPath))) {
+      fs.writeFileSync(distPath, xml, "utf-8");
+      console.log(`[Sitemap] Copied refreshed sitemap to production dist: ${distPath}`);
+    }
+  } catch (error) {
+    console.error("[Sitemap] Background sitemap generator failed:", error);
+  }
+}
+
 // Write config helper
 function saveSiteConfig(newConfig: any) {
   try {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), "utf-8");
+    // Trigger automated background sitemap generation on every configuration save/update
+    generateSitemap(newConfig);
     return true;
   } catch (e) {
     console.error("[Data] Error writing config file:", e);
