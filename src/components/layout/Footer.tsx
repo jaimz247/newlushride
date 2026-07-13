@@ -1,11 +1,18 @@
 import { Logo } from "../ui/Logo";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ShieldCheck, Lock, FileText } from "lucide-react";
+import { X, ShieldCheck, Lock, FileText, Scale, Printer, Shield, Check, FileSignature } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Footer() {
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [activeLegalTab, setActiveLegalTab] = useState<'terms' | 'privacy' | 'legal'>('terms');
+
+  const openLegalModal = (tab: 'terms' | 'privacy' | 'legal') => {
+    setActiveLegalTab(tab);
+    setIsLegalModalOpen(true);
+  };
 
   return (
     <>
@@ -145,9 +152,24 @@ export default function Footer() {
             </a>
           </div>
           <div className="flex items-center gap-8">
-            <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Terms</a>
-            <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="text-xs font-light text-muted-1 hover:text-white transition-colors">Legal Notice</a>
+            <button 
+              onClick={() => openLegalModal('terms')} 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+            >
+              Terms
+            </button>
+            <button 
+              onClick={() => openLegalModal('privacy')} 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+            >
+              Privacy Policy
+            </button>
+            <button 
+              onClick={() => openLegalModal('legal')} 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+            >
+              Legal Notice
+            </button>
             <a 
               href="/admin" 
               onClick={(e) => {
@@ -235,6 +257,276 @@ export default function Footer() {
                   </div>
                 </div>
 
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {isLegalModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+            onClick={() => setIsLegalModalOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legal-modal-title"
+          >
+            <motion.div 
+              initial={{ scale: 0.96, opacity: 0, y: 25 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto relative shadow-2xl flex flex-col"
+            >
+              <button 
+                onClick={() => setIsLegalModalOpen(false)}
+                className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded-full p-1 z-10"
+                aria-label="Close legal modal"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="p-6 md:p-10 flex-1">
+                {/* Header Info */}
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-lush-yellow/10 rounded-full flex items-center justify-center text-lush-yellow shrink-0">
+                    <Scale size={22} />
+                  </div>
+                  <div>
+                    <h3 id="legal-modal-title" className="text-xl md:text-2xl font-display text-white">LushRide Legal &amp; Compliance Portal</h3>
+                    <p className="text-xs text-lush-yellow uppercase tracking-widest mt-0.5">Corporate Governance &amp; Data Safeguards</p>
+                  </div>
+                </div>
+
+                {/* Tabs Controller */}
+                <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4 mb-6">
+                  <button 
+                    onClick={() => setActiveLegalTab('terms')}
+                    className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all flex items-center gap-2 cursor-pointer ${
+                      activeLegalTab === 'terms' 
+                        ? 'bg-lush-yellow text-black' 
+                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <FileSignature size={12} /> Terms of Service
+                  </button>
+                  <button 
+                    onClick={() => setActiveLegalTab('privacy')}
+                    className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all flex items-center gap-2 cursor-pointer ${
+                      activeLegalTab === 'privacy' 
+                        ? 'bg-lush-yellow text-black' 
+                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <Shield size={12} /> Privacy Policy
+                  </button>
+                  <button 
+                    onClick={() => setActiveLegalTab('legal')}
+                    className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all flex items-center gap-2 cursor-pointer ${
+                      activeLegalTab === 'legal' 
+                        ? 'bg-lush-yellow text-black' 
+                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <Scale size={12} /> Legal Notice
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      window.print();
+                      toast.info("Opening system print menu...");
+                    }}
+                    className="ml-auto px-3 py-2 text-[10px] uppercase font-bold tracking-widest text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer"
+                    title="Print documentation"
+                  >
+                    <Printer size={12} /> Print
+                  </button>
+                </div>
+
+                {/* Content Sections */}
+                <div className="text-left text-sm font-light text-muted-1 space-y-6 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                  
+                  {activeLegalTab === 'terms' && (
+                    <div className="space-y-6 animate-fadeIn">
+                      <div className="border-l-2 border-lush-yellow pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">1. Agreement to Terms</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          Welcome to LushRide. These Terms of Service ("Terms") constitute a legally binding agreement between you ("Client", "Passenger") and LushRide Ltd ("LushRide", "we", "our"), registered in the Federal Republic of Nigeria. By submitting a reservation, booking custom executive transport, or contracting armed security escorts, you accept and agree to be bound by these Terms without limitation.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">2. Vehicle Allocations and Fleet Substitution</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          LushRide operates an ultra-premium, heavily vetted fleet (including customized SUVs, luxury sedans, and armored B6/B7 escorts). While we make every mechanical and operational effort to dispatch the exact model selected during booking, we reserve the absolute right to substitute vehicle assets with an equivalent or superior tier of luxury vehicle in the event of scheduled maintenance, immediate tactical sweeps, or airport customs security requirements.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">3. Chauffeur Standards and Operational Directives</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          All LushRide chauffeurs are professional, rigorously screened, and undergo extensive tactical defensive driving and executive hospitality training. Our chauffeurs are bound by strict corporate Non-Disclosure Agreements (NDAs). Under no circumstances is any client or passenger permitted to operate a LushRide fleet vehicle. Chauffeurs are authorized to refuse transportation or alter routes immediately if any passenger engages in unlawful activity, acts in a hostile manner, or breaches safety protocols.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">4. Detailed Cancellation &amp; Escort Mobilization Rules</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          We recognize that executive calendars undergo frequent shifts. To ensure optimal fleet scheduling, the following cancellation policy is strictly enforced:
+                        </p>
+                        <ul className="mt-2 space-y-1.5 text-xs">
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Standard Bookings (Over 24 Hours):</strong> Complete, penalty-free cancellation with a 100% refund.</span>
+                          </li>
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Standard Bookings (12 to 24 Hours):</strong> Cancellation is subject to a 50% reservation hold fee.</span>
+                          </li>
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Standard Bookings (Under 12 Hours / No-Show):</strong> Cancellation or failure to show is subject to a 100% booking charge.</span>
+                          </li>
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Armed Escort &amp; MOPOL Detachments:</strong> Due to immediate police mobilization, state clearance fees, and armed personnel scheduling, any armed security escort bookings are 100% non-refundable within 48 hours of scheduled transit.</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">5. Airport Waiting Times &amp; Flight Monitoring</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          LushRide uses real-time satellite telemetry to track client flights (including commercial arrivals at Lagos MMIA and Abuja Nnamdi Azikiwe, as well as private aviation terminals). Airport transfers include 60 minutes of complimentary waiting time from actual flight touchdown. Non-airport executive pickups include 15 minutes of complimentary waiting. Standard hourly overtime rates will apply after these margins expire.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">6. Client Liability, Indemnity and Force Majeure</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          LushRide strives for immaculate, uncompromised punctuality. However, we are not liable for delayed arrivals, missed flights, or itinerary failures caused by events beyond our direct operational control (Force Majeure). This includes extreme traffic bottlenecks, sudden fuel scarcity, hazardous weather, civil unrest, or state-directed police barriers. The client agrees to indemnify and hold LushRide harmless against any damage to vehicle interiors caused by willful misconduct, and agrees that LushRide's maximum liability is strictly limited to the base booking fare.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeLegalTab === 'privacy' && (
+                    <div className="space-y-6 animate-fadeIn">
+                      <div className="border-l-2 border-lush-yellow pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">1. Commitment to Executive Privacy</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          LushRide serves high-profile corporate leaders, diplomatic representatives, and private individuals who require absolute discretion. We handle your identity, movement logs, and security directives with premium confidentiality, fully aligned with the Nigeria Data Protection Regulation (NDPR) and global privacy acts.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">2. Data Acquisition Profiles</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          We collect only the essential details necessary to orchestrate a highly secure, luxury trip:
+                        </p>
+                        <ul className="mt-2 space-y-1 text-xs">
+                          <li className="flex items-center gap-2"><Check size={12} className="text-lush-yellow" /> Passenger names, phone numbers, and encrypted email credentials.</li>
+                          <li className="flex items-center gap-2"><Check size={12} className="text-lush-yellow" /> Detailed travel itineraries, flight coordinates, and landing targets.</li>
+                          <li className="flex items-center gap-2"><Check size={12} className="text-lush-yellow" /> Corporate billing entities, tax certificates, and clearance documentation.</li>
+                          <li className="flex items-center gap-2"><Check size={12} className="text-lush-yellow" /> Advance security preferences, dietary options, and escort authorization codes.</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">3. Technical Security &amp; Encryption Protocols</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          Your customer record and booking history are shielded by enterprise-grade AES-256 encryption. Dispatch databases are strictly segregated, utilizing cloud-hosted security parameters. Chauffeurs are explicitly forbidden from storing passenger telephone numbers or destination details on personal devices.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">4. Automated Data Purge Cycles</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          To minimize any long-term physical or digital risk footprint:
+                        </p>
+                        <ul className="mt-2 space-y-1.5 text-xs">
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Trip Telemetry logs:</strong> Specific GPS tracking, route timing records, and coordinates are archived 30 days post-trip.</span>
+                          </li>
+                          <li className="flex items-start gap-2 text-white/90">
+                            <span className="text-lush-yellow font-bold select-none">•</span>
+                            <span><strong>Itinerary Purging:</strong> Historical flight manifests, custom security logs, and escort dispatch files are permanently and securely deleted from all cloud systems after 180 days, except where corporate accounts request persistent logging for annual audits.</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">5. Armed Escort Disclosures &amp; State Security Cooperation</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          When you request armed escorts or Mobile Police (MOPOL) support, we cooperate fully with registered law enforcement entities to register legal weapons transport manifests and route clearances. Your movement data is never sold, leased, or disclosed to third-party marketing brokers.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">6. Customer Sovereignty and Legal Rights</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          Under the NDPR, passengers have full legal authority to inspect, rectify, restrict, or request the immediate deletion of their personal profiles ("Right to be Forgotten"). Any compliance requests can be directly registered with our legal panel at <a href="mailto:info@lushride.com" className="text-lush-yellow hover:underline">info@lushride.com</a>.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeLegalTab === 'legal' && (
+                    <div className="space-y-6 animate-fadeIn">
+                      <div className="border-l-2 border-lush-yellow pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">1. Entity Incorporation and Licensing</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          LushRide and LushRide Worldwide are commercial trade names of LushRide Ltd, a private limited liability entity registered with the Corporate Affairs Commission (CAC) of the Federal Republic of Nigeria. Our operational activities conform to all municipal transport licenses, federal safety regulations, and corporate taxes.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">2. Armed Patrol and Security Regulation</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          All armed escorts, VIP protection agents, and Mobile Police (MOPOL) detachments provided by LushRide are sourced, verified, and legally deployed in accordance with the regulatory mandates of the Nigeria Police Force and the Ministry of Police Affairs. All weapons and support personnel carry certified official duty sheets and travel authorizations.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">3. Intellectual Property Rights</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          All visual layouts, trademarked logos, typography, bespoke design matrices, digital booking engines, and original media assets hosted on this application are the exclusive intellectual property of LushRide Ltd. Any unauthorized copying, distribution, or reproduction of these assets is subject to immediate legal prosecution.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">4. Insurance Protection Declarations</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          Every vehicle in the active LushRide showroom, including armored executive vehicles and security escorts, is protected by high-value commercial vehicle and passenger liability underwriting with premium coverage levels managed by major, licensed Nigerian insurance organizations.
+                        </p>
+                      </div>
+
+                      <div className="border-l-2 border-white/20 pl-4 py-1">
+                        <h4 className="text-white font-medium uppercase text-xs tracking-wider">5. Legal Jurisdiction and Choice of Law</h4>
+                        <p className="mt-2 text-xs leading-relaxed">
+                          These compliance policies, terms, and regulatory disclosures are governed exclusively by and must be interpreted in alignment with the laws of the Federal Republic of Nigeria. Any legal disputes or litigation arising out of our operations will be handled exclusively by the state or federal courts situated in Lagos, Nigeria.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
+              {/* Footer controls */}
+              <div className="border-t border-white/10 p-6 flex items-center justify-between bg-black/40">
+                <p className="text-[10px] uppercase tracking-wider text-muted-1">
+                  Last updated: June 2026 | LushRide Legal Panel
+                </p>
+                <button
+                  onClick={() => setIsLegalModalOpen(false)}
+                  className="px-6 py-2.5 bg-white hover:bg-lush-yellow text-black font-bold uppercase text-[10px] tracking-widest rounded transition-all cursor-pointer shadow-md hover:shadow-lush-yellow/10"
+                >
+                  Acknowledge &amp; Close
+                </button>
               </div>
             </motion.div>
           </motion.div>
