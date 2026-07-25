@@ -570,12 +570,9 @@ export default function Footer() {
                     <div className="space-y-8 animate-fadeIn">
                       <div>
                         <h2 className="text-xl font-display text-white border-b border-white/10 pb-2 mb-4">PRIVACY POLICY</h2>
-                        <p className="text-xs text-lush-yellow uppercase tracking-widest mb-6">LUSH RIDE LIMITED | Last Updated: 13 July 2026</p>
+                        <p className="text-xs text-lush-yellow uppercase tracking-widest mb-6">LUSHRIDE LIMITED | Last Updated: 25th July 2026</p>
                         <p className="text-xs leading-relaxed">
-                          LushRide Limited (“LushRide”) is the owner and operator of LushRide Limited software and any other software, online platform, website, mobile or tablet application or domains used to provide our services (together with the Website, referred to as the “Services").
-                        </p>
-                        <p className="text-xs leading-relaxed mt-3">
-                          LushRide respects the privacy of your personal data and makes every effort to ensure your information is protected and remains private. We have provided this Privacy Policy to explain how we collect, use, share, disclose and protect personal information about the Users of our Website and Services hereafter referred to as “user”, “you” or "your".
+                          LushRide Limited (“LushRide”) is the owner and operator of LushRide Limited software and any other software, online platform, website, mobile or tablet application or domains used to provide our services (together with the Website, referred to as the “Services"). LushRide respects the privacy of your personal data and makes every effort to ensure your information is protected and remains private. We have provided this Privacy Policy to explain how we collect, use, share, disclose and protect personal information about the Users of our Website and Services hereafter referred to as “user”, “you” or "your".
                         </p>
                         <p className="text-xs leading-relaxed mt-3">
                           We may change this Privacy Policy from time to time. If we decide to change this Privacy Policy, we will inform you by posting the revised Privacy Policy on the Website, unless otherwise required by law to communicate through a different means.
@@ -593,9 +590,12 @@ export default function Footer() {
 
                       <div className="space-y-4">
                         <h4 className="text-white font-semibold text-xs uppercase tracking-wider">2. Information Provided Directly by You</h4>
-                        <div className="pl-4 border-l border-white/10 text-xs leading-relaxed">
+                        <div className="pl-4 border-l border-white/10 space-y-3 text-xs leading-relaxed">
                           <p>
-                            We may collect certain information about you provided directly to us, such as when you request information, create, modify or lodge a complaint, complete a LushRide Online form, survey, questionnaire or application, contact customer support, enter into a service provider agreement, make a purchase, join or enroll for an event or otherwise communicate with us in any manner. This information may include, without limitation: name, date of birth, e-mail address, physical address, business address, phone number, photograph, product description, or any other personal information you choose to provide.
+                            We may collect certain information about you provided directly to us, such as when you request information, create, modify or lodge a complaint, complete a LushRide Online form, survey, questionnaire or application, contact customer support, enter into a service provider agreement, make a purchase, join or enroll for an event or otherwise communicate with us in any manner. This information may include, without limitation: name, date of birth, e-mail address, login name and password, home or work address, phone number, profile picture, saved favourite locations, preferences and settings related to the account, or any other personal information you choose to provide.
+                          </p>
+                          <p>
+                            We collect details of your payment methods including payment card type, bank name, bank account number, related payment verification information and transaction history on the platform. We collect identification documents including government-issued or national identity documents (such as passports, driver’s licences or national ID cards) and photographs/pictures you submit yourself. We also collect demographic data such as your age and gender.
                           </p>
                         </div>
                       </div>
@@ -604,21 +604,34 @@ export default function Footer() {
                         <h4 className="text-white font-semibold text-xs uppercase tracking-wider">3. Information Collected Through Your Use of Our Services</h4>
                         <div className="pl-4 border-l border-white/10 space-y-3 text-xs leading-relaxed">
                           <p>
-                            We may collect certain information about you, your activity on our Website and your computer or device when using our Services, for instance how you use them (e.g., date and time you logged in, features you’ve been using, searches, clicks and pages which have been shown to you, referring web page address, advertising that you click on) and how you interact with other users and us.
+                            We may collect certain information about you, your activity on our Website and your computer or device when using our Services. These include:
                           </p>
-                          <p className="font-semibold text-white/90">The following are situations in which you may provide Your Information to us:</p>
-                          <ul className="space-y-2 pl-4 list-none">
-                            <li className="flex gap-2"><span className="text-lush-yellow">a.</span> <span>When you fill out forms or fields through our Services.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">b.</span> <span>When you register for an account with our Service.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">c.</span> <span>When you interact with us through Customer Support.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">d.</span> <span>When you sign up for any newsletters or other materials through our services.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">e.</span> <span>When you provide information to us through a third-party application, service or Website.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">f.</span> <span>When you communicate with us or request information about us or our products or Services, whether via email or other means.</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">g.</span> <span>When you participate in any of our marketing initiatives, events or promotions; and</span></li>
-                            <li className="flex gap-2"><span className="text-lush-yellow">h.</span> <span>When you participate in forums, reviews or provide or post user generated content or other submissions.</span></li>
-                          </ul>
+                          <p className="font-semibold text-white/90">Geolocation Data</p>
+                          <p>
+                            We collect data about your precise and/or approximate geolocation (including GPS, and IP address) from your mobile device depending on your app settings and device permissions, when you open and use LushRide.
+                          </p>
+                          <p className="font-semibold text-white/90">App Usage Data</p>
+                          <p>
+                            This includes: details of journeys (date and time, pick-up and drop-off addresses, journey distances and routes), payment history (including whether you used any coupons or promotional codes), cancellation history, dates and times you log-in and log-off the LushRide app and app features or pages viewed, browser type, app crashes and other system activity.
+                          </p>
+                          <p className="font-semibold text-white/90">Communication Data</p>
+                          <p>
+                            We collect communication and correspondence data when you engage with our Customer Support Team via the in-app chat function, report an incident, communicate via emails, web forms, or speak with our Customer Support agents, or communicate with Drivers via the LushRide app using the in-app chat function or via internet calls (where available).
+                          </p>
+                          <p className="font-semibold text-white/90">User Generated Data</p>
+                          <p>
+                            We collect personal data when you use certain features. For example to provide recordings such as audio recordings generated during the trip (as part of our safety toolkit trip audio recording feature, where such feature is available, or feedback about other users, including compliments that you have the option to give to Drivers, when you finish your ride, along with a 5 star review.
+                          </p>
+                          <p className="font-semibold text-white/90">Device Data</p>
+                          <p>
+                            We collect data about the devices you use to access the LushRide App, including the hardware model, device IP address and other unique device identifiers, device operating system, browser version, device vendor name, app version, identity of carrier and manufacturer and preferred languages.
+                          </p>
+                          <p className="font-semibold text-white/90">Calendar Data</p>
+                          <p>
+                            If you set your device permissions or choose to give LushRide access to your chosen calendar, we will collect information available in your calendar such as event details to use in providing you certain optional features.
+                          </p>
                           <p className="mt-4">
-                            We also automatically collect information via the Website or Service using various technologies, including, but not limited to Cookies and Web Beacons. We may collect your IP address, browsing behaviour and device IDs. This information is used by us to enable us to better understand how our Services are being used by visitors and allows us to administer and customise the Services to improve your overall experience.
+                            We also automatically collect information via the Website or Service using various technologies, including, but not limited to Cookies and Web Beacons. We may collect your IP address, location, browsing behaviour and device IDs. This information is used by us to enable us to better understand how our Services are being used by visitors and allows us to administer and customise the Services to improve your overall experience.
                           </p>
                         </div>
                       </div>
@@ -689,7 +702,7 @@ export default function Footer() {
                       <div className="space-y-4">
                         <h4 className="text-white font-semibold text-xs uppercase tracking-wider">8. How We Disclose Information We Collect</h4>
                         <div className="pl-4 border-l border-white/10 space-y-3 text-xs leading-relaxed">
-                          <p>We may disclose the information we collect about you as described in this Privacy Policy or as described at the time of collection or sharing, including as follows:</p>
+                          <p>a. We may disclose the information we collect about you as described in this Privacy Policy or as described at the time of collection or sharing, including as follows:</p>
                           <ul className="space-y-2.5 pl-4 list-none">
                             <li className="flex gap-2"><span className="text-lush-yellow font-bold">i)</span> <span>With third-party Service Providers that provide a variety of services on our behalf. For example, we may rely on service providers to provide web analytics, data processing, advertising, email distribution and other services; These service providers are obligated by contract to protect the confidentiality, integrity and security of the information we share with them;</span></li>
                             <li className="flex gap-2"><span className="text-lush-yellow font-bold">ii)</span> <span>With the general public if you submit content to a part of our Services that is viewable by the general public, such as a forum or community area;</span></li>
