@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-export default function SEOHead() {
+interface SEOHeadProps {
+  title?: string;
+  description?: string;
+}
+
+export default function SEOHead({ title: customTitle, description: customDescription }: SEOHeadProps = {}) {
   const [currentHash, setCurrentHash] = useState(window.location.hash);
 
   useEffect(() => {
@@ -14,9 +19,9 @@ export default function SEOHead() {
   }, []);
 
   // Map hashes to custom, high-impact SEO meta-data
-  let title = "LushRide | Lagos' Premier Executive Chauffeur & Luxury Car Hire";
-  let description = "Experience Lagos with LushRide. Absolute comfort, uncompromising privacy, and precision scheduling. Premium chauffeur services, executive airport transfers, and armored SUV rentals.";
-  let url = "https://lushride.com/" + currentHash;
+  let title = customTitle || "LushRide | Lagos' Premier Executive Chauffeur & Luxury Car Hire";
+  let description = customDescription || "Experience Lagos with LushRide. Absolute comfort, uncompromising privacy, and precision scheduling. Premium chauffeur services, executive airport transfers, and armored SUV rentals.";
+  let url = "https://lushride.com/" + (window.location.pathname !== '/' ? window.location.pathname : currentHash);
 
   if (currentHash === '#about') {
     title = "About Our Elite Chauffeur Services | LushRide Lagos";

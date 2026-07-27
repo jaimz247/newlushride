@@ -26,6 +26,9 @@ const FAQ = lazy(() => import('./components/sections/FAQ'));
 const Insights = lazy(() => import('./components/sections/Insights'));
 const Waitlist = lazy(() => import('./components/sections/Waitlist'));
 const AdminDashboard = lazy(() => import('./components/sections/AdminDashboard'));
+const PrivacyPolicyPage = lazy(() => import('./components/pages/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('./components/pages/TermsPage'));
+const SecurityPage = lazy(() => import('./components/pages/SecurityPage'));
 
 function Divider() {
   return <div className="w-full h-px bg-white/10" />;
@@ -116,56 +119,74 @@ const InsightsSkeleton = () => (
 );
 
 export default function App() {
-  const [isAdminView, setIsAdminView] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   useEffect(() => {
     initTelemetry();
     const checkPath = () => {
-      setIsAdminView(window.location.pathname === '/admin');
+      setCurrentPath(window.location.pathname);
     };
     checkPath();
     window.addEventListener('popstate', checkPath);
-    return () => window.removeEventListener('popstate', checkPath);
+
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+      if (anchor && anchor.origin === window.location.origin) {
+        const pathname = anchor.pathname;
+        if (['/privacy', '/terms', '/terms-of-reference', '/security', '/admin'].includes(pathname)) {
+          e.preventDefault();
+          window.history.pushState({}, '', pathname);
+          setCurrentPath(pathname);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+    document.addEventListener('click', handleLinkClick);
+
+    return () => {
+      window.removeEventListener('popstate', checkPath);
+      document.removeEventListener('click', handleLinkClick);
+    };
   }, []);
 
   const navigateToHome = () => {
     window.history.pushState({}, '', '/');
-    setIsAdminView(false);
+    setCurrentPath('/');
   };
 
-  if (isAdminView) {
+  if (currentPath === '/admin') {
     return (
       <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto">
         <Toaster position="bottom-center" />
-        <Suspense fallback={
-          <div className="h-screen flex flex-col items-center justify-center bg-[#050505] p-6">
-            <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl p-8 space-y-6 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-              {/* Gold header accent line */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-lush-yellow/80 via-lush-yellow to-white/60" />
-              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.02] to-transparent" />
-              
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-xl bg-lush-yellow/10 animate-pulse flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-md bg-lush-yellow/20"></div>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <div className="w-1/2 h-4 bg-white/10 rounded animate-pulse"></div>
-                  <div className="w-1/3 h-3 bg-white/5 rounded animate-pulse"></div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="w-full h-8 bg-white/5 rounded animate-pulse"></div>
-                <div className="w-full h-24 bg-white/5 rounded animate-pulse"></div>
-              </div>
-              <p className="text-center text-[10px] uppercase tracking-widest text-lush-yellow/60 font-mono animate-pulse">
-                INITIALIZING ENCRYPTED TERMINAL...
-              </p>
-            </div>
-          </div>
-        }>
+        <Suspense fallback={<GenericFallback />}>
           <AdminDashboard onClose={navigateToHome} />
         </Suspense>
       </div>
+    );
+  }
+
+  if (currentPath === '/privacy') {
+    return (
+      <Suspense fallback={<GenericFallback />}>
+        <PrivacyPolicyPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === '/terms' || currentPath === '/terms-of-reference') {
+    return (
+      <Suspense fallback={<GenericFallback />}>
+        <TermsPage />
+      </Suspense>
+    );
+  }
+
+  if (currentPath === '/security') {
+    return (
+      <Suspense fallback={<GenericFallback />}>
+        <SecurityPage />
+      </Suspense>
     );
   }
   return (

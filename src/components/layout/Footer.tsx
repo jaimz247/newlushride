@@ -30,14 +30,14 @@ export default function Footer() {
                 LushRide Ltd is registered in Nigeria. Delivering unparalleled executive transport across major commercial hubs.
               </p>
               <div className="mt-8 flex items-center gap-3">
-                <button 
-                  onClick={() => setIsSecurityModalOpen(true)}
+                <a 
+                  href="/security"
                   className="flex flex-col items-start pt-2 border-t border-white/10 w-[200px] text-left hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-lush-yellow rounded-sm"
                   aria-label="View Security and Privacy Information"
                 >
                    <span className="text-[10px] text-white/50 uppercase tracking-widest font-semibold mb-1.5 flex items-center gap-1.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-lush-yellow text-opacity-80"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Security & Privacy</span>
                    <p className="text-[10px] text-muted-1 leading-snug">ISO 27001 Certified &amp; Vetted Fleet. Armed escort services available upon request.</p>
-                </button>
+                </a>
               </div>
             </div>
 
@@ -151,19 +151,25 @@ export default function Footer() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
             </a>
           </div>
-          <div className="flex items-center gap-8">
-            <button 
-              onClick={() => openLegalModal('terms')} 
-              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+          <div className="flex items-center gap-6 md:gap-8 flex-wrap justify-center">
+            <a 
+              href="/terms" 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer"
             >
               Terms of Use
-            </button>
-            <button 
-              onClick={() => openLegalModal('privacy')} 
-              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+            </a>
+            <a 
+              href="/terms-of-reference" 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer"
+            >
+              Terms of Reference
+            </a>
+            <a 
+              href="/privacy" 
+              className="text-xs font-light text-muted-1 hover:text-white transition-colors cursor-pointer"
             >
               Privacy Policy
-            </button>
+            </a>
             <a 
               href="/admin" 
               onClick={(e) => {
