@@ -190,7 +190,7 @@ export default function App() {
     );
   }
   return (
-    <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto md:cursor-none transition-colors duration-500">
+    <div className="bg-theme min-h-screen text-white selection:bg-white selection:text-charcoal cursor-auto transition-colors duration-500">
       <SEOHead />
       <ScrollProgress />
       <CustomCursor />
