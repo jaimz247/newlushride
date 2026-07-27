@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 interface FadeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   wrapperClassName?: string;
   placeholder?: string;
+  priority?: boolean;
 }
 
 const DEFAULT_B64_PLACEHOLDER = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAMElEQVR4nGNQQAEzCWEGhu8M34X+M/yH4l9M/5m+M/xn+AdkvoPxT2aoKgw1MAkAADMDEWv41/YdAAAAAElFTkSuQmCC";
@@ -51,13 +52,17 @@ export default function FadeImage({
   placeholder = DEFAULT_B64_PLACEHOLDER, 
   src, 
   sizes,
+  priority = false,
   ...props 
 }: FadeImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const isEager = priority || props.loading === 'eager';
+  const [isInView, setIsInView] = useState(isEager);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    if (isEager) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -66,7 +71,7 @@ export default function FadeImage({
         }
       },
       {
-        rootMargin: '100px', // Preload slightly before appearing in viewport
+        rootMargin: '200px', // Preload 200px before appearing in viewport
       }
     );
 
@@ -77,7 +82,7 @@ export default function FadeImage({
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [isEager]);
 
   const optimized = getOptimizedImageAttrs(src, sizes);
 

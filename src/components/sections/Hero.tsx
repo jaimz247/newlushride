@@ -380,6 +380,7 @@ export default function Hero() {
           <FadeImage
             src="https://upload.wikimedia.org/wikipedia/commons/1/17/2022_Land_Rover_Range_Rover_SE_P440e_AWD_Automatic_3.0_Front.jpg" 
             alt="Imposing Luxury Vehicle" 
+            priority={true}
             className="w-full h-full object-cover object-center w-full"
             wrapperClassName="absolute inset-0"
           />
