@@ -90,7 +90,14 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; background-color: #050505; color: #D4AF37; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="font-size: 24px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px; color: #FFFFFF;">
+          LUSHRIDE
+        </div>
+        <div style="width: 48px; height: 2px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); animation: pulse 1.5s infinite ease-in-out;"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

@@ -123,6 +123,7 @@ export default function App() {
 
   useEffect(() => {
     initTelemetry();
+    sessionStorage.removeItem('lushride_chunk_reload');
     const checkPath = () => {
       setCurrentPath(window.location.pathname);
     };

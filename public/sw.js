@@ -1,8 +1,8 @@
-const CACHE_NAME = 'lushride-cache-v1';
+const CACHE_NAME = 'lushride-cache-v2';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
   '/logo.png',
+  '/favicon.png',
+  '/favicon.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -30,35 +30,44 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+
+  // Network-First strategy for HTML navigation requests to prevent stale index.html loading missing JS chunks
+  if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || caches.match('/index.html');
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache-First with background revalidation for other GET requests
   event.respondWith(
     caches.match(event.request).then((response) => {
-      if (response) {
-        // Return cached response but try to fetch update in background
-        fetch(event.request).then((networkResponse) => {
-            if (networkResponse.ok && event.request.url.startsWith('http')) {
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, networkResponse);
-                });
-            }
-        }).catch(() => {});
-        return response;
-      }
-      
-      // If not in cache, go to network network
-      return fetch(event.request).then(networkResponse => {
-         if (networkResponse.ok && event.request.url.startsWith('http')) {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.ok && event.request.url.startsWith('http')) {
             const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseClone);
-            });
-         }
-         return networkResponse;
-      }).catch(() => {
-         // Offline fallback if needed
-      });
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {});
+
+      return response || fetchPromise;
     })
   );
 });

@@ -19,6 +19,18 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    // Auto-recovery for chunk loading failures after new deployments
+    if (
+      error?.name === 'ChunkLoadError' || 
+      error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Importing a module script failed')
+    ) {
+      const hasReloaded = sessionStorage.getItem('lushride_chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('lushride_chunk_reload', 'true');
+        window.location.reload();
+      }
+    }
   }
 
   public render() {
